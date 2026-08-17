@@ -1,0 +1,2528 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LogisticsGlossaryHR — Aday Değerlendirme Sistemi</title>
+<style>
+:root{
+  --primary:#2563EB;
+  --primary-dark:#1D4ED8;
+  --bg:#FFFFFF;
+  --bg-secondary:#F8FAFC;
+  --text:#111827;
+  --text-muted:#6B7280;
+  --text-faint:#9CA3AF;
+  --accent:#3B82F6;
+  --success:#22C55E;
+  --success-bg:#ECFDF5;
+  --warning:#F59E0B;
+  --warning-bg:#FFFBEB;
+  --danger:#EF4444;
+  --danger-bg:#FEF2F2;
+  --info-bg:#EFF6FF;
+  --border:#E5E7EB;
+  --radius:14px;
+  --radius-sm:9px;
+  --shadow-sm:0 1px 2px rgba(17,24,39,0.04);
+  --shadow-md:0 4px 16px rgba(17,24,39,0.06);
+  --shadow-lg:0 12px 36px rgba(17,24,39,0.10);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Helvetica,Arial,sans-serif;
+  background:var(--bg-secondary);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  font-size:14.5px;
+  line-height:1.5;
+}
+::selection{background:#BFDBFE;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+
+/* ---------- LAYOUT ---------- */
+#app{display:flex;min-height:100vh;}
+
+.sidebar{
+  width:236px;
+  flex-shrink:0;
+  background:var(--bg);
+  border-right:1px solid var(--border);
+  padding:22px 14px;
+  position:fixed;
+  top:0;left:0;bottom:0;
+  display:flex;
+  flex-direction:column;
+  z-index:40;
+  transition:transform .25s ease;
+}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 22px 10px;}
+.brand-mark{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:700;font-size:15px;
+  box-shadow:0 4px 10px rgba(37,99,235,.28);
+  flex-shrink:0;
+}
+.brand-text{display:flex;flex-direction:column;line-height:1.15;}
+.brand-text b{font-size:14.5px;font-weight:700;letter-spacing:-.01em;}
+.brand-text span{font-size:11px;color:var(--text-muted);font-weight:500;}
+
+.nav{display:flex;flex-direction:column;gap:2px;margin-top:6px;}
+.nav-item{
+  display:flex;align-items:center;gap:11px;
+  padding:9px 12px;border-radius:10px;
+  color:var(--text-muted);font-size:13.6px;font-weight:500;
+  cursor:pointer;transition:background .15s ease,color .15s ease;
+  border:none;background:none;width:100%;text-align:left;
+}
+.nav-item svg{width:17px;height:17px;flex-shrink:0;opacity:.85;}
+.nav-item:hover{background:var(--bg-secondary);color:var(--text);}
+.nav-item.active{background:var(--info-bg);color:var(--primary);font-weight:600;}
+.nav-item.active svg{opacity:1;}
+
+.sidebar-footer{margin-top:auto;padding:10px;}
+.save-indicator{
+  display:flex;align-items:center;gap:7px;
+  font-size:12px;color:var(--text-faint);
+  padding:8px 10px;border-radius:10px;background:var(--bg-secondary);
+  transition:all .2s ease;
+}
+.save-indicator.saved{color:var(--success);background:var(--success-bg);}
+.save-indicator .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.save-indicator.saving .dot{animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+.main{margin-left:236px;flex:1;min-width:0;padding:26px 34px 60px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:16px;flex-wrap:wrap;}
+.topbar h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0;}
+.topbar .sub{color:var(--text-muted);font-size:13px;margin-top:3px;}
+
+.mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:50;background:var(--bg);border:1px solid var(--border);border-radius:10px;width:38px;height:38px;align-items:center;justify-content:center;box-shadow:var(--shadow-md);}
+.overlay{display:none;position:fixed;inset:0;background:rgba(17,24,39,.35);z-index:39;}
+
+/* ---------- CARDS / KPI ---------- */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:26px;}
+.kpi-card{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 18px 16px;box-shadow:var(--shadow-sm);
+  transition:transform .18s ease,box-shadow .18s ease;
+  animation:fadeUp .35s ease both;
+}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.kpi-label{font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.dicon{display:inline-block;}
+.kpi-value{font-size:27px;font-weight:700;letter-spacing:-.02em;}
+.kpi-card.accent-primary .kpi-value{color:var(--primary);}
+.kpi-card.accent-success .kpi-value{color:var(--success);}
+.kpi-card.accent-warning .kpi-value{color:var(--warning);}
+.kpi-card.accent-danger .kpi-value{color:var(--danger);}
+.kpi-card.accent-muted .kpi-value{color:var(--text-muted);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+.panel{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);animation:fadeUp .35s ease both;}
+.panel + .panel{margin-top:20px;}
+.panel-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.panel-header h2{font-size:15.5px;font-weight:700;margin:0;letter-spacing:-.01em;}
+.panel-body{padding:20px;}
+
+/* ---------- TOOLBAR / FILTERS ---------- */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg-secondary);border-radius:var(--radius) var(--radius) 0 0;}
+.search-box{position:relative;flex:1;min-width:200px;}
+.search-box input{
+  width:100%;padding:9px 12px 9px 34px;border-radius:10px;border:1px solid var(--border);
+  background:var(--bg);outline:none;transition:border-color .15s,box-shadow .15s;
+}
+.search-box input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+.search-box svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-faint);}
+select.filter-select{
+  padding:9px 30px 9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);
+  outline:none;cursor:pointer;color:var(--text);min-width:130px;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%236B7280'/></svg>");
+  background-repeat:no-repeat;background-position:right 12px center;
+}
+select.filter-select:focus{border-color:var(--primary);}
+.clear-filters{font-size:12.5px;color:var(--primary);font-weight:600;cursor:pointer;padding:9px 6px;white-space:nowrap;}
+.clear-filters:hover{text-decoration:underline;}
+.result-count{font-size:12.5px;color:var(--text-muted);padding:0 20px;margin-top:12px;}
+
+/* ---------- TABLE ---------- */
+.table-wrap{overflow-x:auto;}
+table.candidates{width:100%;border-collapse:collapse;font-size:13.4px;}
+table.candidates th{
+  text-align:left;padding:11px 16px;color:var(--text-muted);font-weight:600;font-size:11.5px;
+  text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--border);white-space:nowrap;
+}
+table.candidates td{padding:13px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
+table.candidates tbody tr{cursor:pointer;transition:background .12s ease;}
+table.candidates tbody tr:hover{background:var(--bg-secondary);}
+table.candidates tbody tr:last-child td{border-bottom:none;}
+.name-cell{display:flex;align-items:center;gap:10px;}
+.avatar{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#DBEAFE,#BFDBFE);color:var(--primary-dark);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;
+}
+.name-main{font-weight:600;color:var(--text);}
+.name-sub{font-size:11.8px;color:var(--text-faint);margin-top:1px;}
+.cell-muted{color:var(--text-muted);}
+.chev{color:var(--text-faint);}
+
+/* ---------- BADGES ---------- */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11.8px;font-weight:600;white-space:nowrap;}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.badge-success{background:var(--success-bg);color:#15803D;}
+.badge-warning{background:var(--warning-bg);color:#B45309;}
+.badge-blue{background:var(--info-bg);color:var(--primary-dark);}
+.badge-muted{background:#F3F4F6;color:#4B5563;}
+.badge-danger{background:var(--danger-bg);color:#B91C1C;}
+
+/* ---------- BUTTONS ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;justify-content:center;
+  padding:9px 16px;border-radius:10px;border:1px solid var(--border);
+  background:var(--bg);color:var(--text);font-weight:600;font-size:13px;
+  cursor:pointer;transition:all .15s ease;white-space:nowrap;
+}
+.btn:hover{background:var(--bg-secondary);}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-dark);}
+.btn-ghost{border-color:transparent;background:transparent;}
+.btn-ghost:hover{background:var(--bg-secondary);}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:8px;}
+.btn-danger-ghost{color:var(--danger);border-color:transparent;background:transparent;}
+.btn-danger-ghost:hover{background:var(--danger-bg);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.icon-btn{width:32px;height:32px;padding:0;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--bg);cursor:pointer;color:var(--text-muted);}
+.icon-btn:hover{background:var(--bg-secondary);color:var(--text);}
+.icon-btn svg{width:15px;height:15px;}
+
+/* ---------- FORMS ---------- */
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--text-muted);margin-bottom:6px;}
+.field .hint{font-size:11.5px;color:var(--text-faint);margin-top:5px;}
+.field input[type=text],.field input[type=date],.field select,.field textarea{
+  width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);
+  outline:none;transition:border-color .15s,box-shadow .15s;resize:vertical;
+}
+.field textarea{min-height:88px;line-height:1.55;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:640px){.field-row{grid-template-columns:1fr;}}
+
+.decision-select{font-weight:700;padding:11px 14px;border-radius:10px;font-size:13.5px;}
+
+/* ---------- PROFILE PAGE ---------- */
+.profile-header{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+  padding:22px 24px;margin-bottom:20px;
+}
+.profile-id-row{display:flex;align-items:center;gap:16px;}
+.avatar-lg{
+  width:58px;height:58px;border-radius:16px;flex-shrink:0;
+  background:linear-gradient(135deg,#DBEAFE,#BFDBFE);color:var(--primary-dark);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:19px;
+}
+.profile-id-row h1{font-size:20px;margin:0 0 3px;letter-spacing:-.02em;}
+.profile-meta{display:flex;gap:8px;flex-wrap:wrap;color:var(--text-muted);font-size:12.8px;}
+.profile-meta span{display:inline-flex;align-items:center;gap:5px;}
+.profile-meta .sep{color:var(--text-faint);}
+
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:14px;}
+.back-link:hover{color:var(--primary);}
+.back-link svg{width:15px;height:15px;}
+
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+@media(max-width:980px){.profile-grid{grid-template-columns:1fr;}}
+
+.info-list{display:flex;flex-direction:column;}
+.info-row{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--border);}
+.info-row:last-child{border-bottom:none;}
+.info-row .k{color:var(--text-muted);font-size:12.8px;font-weight:600;flex-shrink:0;width:38%;}
+.info-row .v{font-size:13.3px;text-align:right;flex:1;}
+.long-text{background:var(--bg-secondary);border-radius:10px;padding:13px 14px;font-size:13px;line-height:1.65;color:#374151;white-space:pre-wrap;}
+.subblock{margin-bottom:18px;}
+.subblock:last-child{margin-bottom:0;}
+.subblock h3{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-faint);font-weight:700;margin:0 0 8px;}
+.tag-list{display:flex;flex-wrap:wrap;gap:6px;}
+.tag{background:var(--info-bg);color:var(--primary-dark);font-size:11.8px;font-weight:600;padding:4px 10px;border-radius:8px;}
+
+/* ---------- SCORES ---------- */
+.score-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+.score-item label{display:flex;justify-content:space-between;font-size:12.6px;font-weight:600;color:var(--text-muted);margin-bottom:7px;}
+.score-item label b{color:var(--text);font-weight:700;}
+.stars{display:flex;gap:5px;}
+.star{width:26px;height:26px;border-radius:7px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--text-faint);transition:all .12s ease;}
+.star:hover{border-color:var(--accent);color:var(--accent);}
+.star.filled{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+.avg-score-box{
+  display:flex;align-items:center;gap:16px;background:var(--info-bg);border-radius:12px;padding:16px 18px;margin-top:18px;
+}
+.avg-score-num{font-size:30px;font-weight:800;color:var(--primary-dark);letter-spacing:-.02em;}
+.avg-score-label{font-size:12.5px;color:var(--primary-dark);font-weight:600;line-height:1.4;}
+
+/* ---------- DECISION BAR ---------- */
+.decision-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding:20px 22px;border-radius:var(--radius);margin-top:6px;
+  border:1.5px solid var(--border);
+}
+.decision-options{display:flex;flex-wrap:wrap;gap:8px;}
+.decision-pill{
+  padding:10px 15px;border-radius:11px;border:1.5px solid var(--border);background:var(--bg);
+  font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:7px;
+  transition:all .15s ease;
+}
+.decision-pill:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm);}
+.decision-pill.active-success{background:var(--success-bg);border-color:var(--success);color:#15803D;}
+.decision-pill.active-warning{background:var(--warning-bg);border-color:var(--warning);color:#B45309;}
+.decision-pill.active-blue{background:var(--info-bg);border-color:var(--primary);color:var(--primary-dark);}
+.decision-pill.active-muted{background:#F3F4F6;border-color:#9CA3AF;color:#374151;}
+.decision-pill.active-danger{background:var(--danger-bg);border-color:var(--danger);color:#B91C1C;}
+
+/* ---------- NOTES ---------- */
+.note-item{border:1px solid var(--border);border-radius:12px;padding:13px 14px;margin-bottom:10px;background:var(--bg);}
+.note-item:last-child{margin-bottom:0;}
+.note-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;}
+.note-author{font-weight:700;font-size:12.8px;}
+.note-date{font-size:11.5px;color:var(--text-faint);}
+.note-text{font-size:13.2px;line-height:1.6;color:#374151;white-space:pre-wrap;}
+.note-actions{display:flex;gap:6px;}
+.note-add-row{display:flex;gap:10px;margin-top:14px;align-items:flex-start;flex-wrap:wrap;}
+.note-add-row textarea{flex:1;min-width:220px;min-height:56px;}
+.note-add-row input[type=text]{width:150px;flex-shrink:0;}
+.empty-note{color:var(--text-faint);font-size:13px;padding:6px 0 4px;}
+
+/* ---------- TABS (candidate profile bottom section) ---------- */
+.section-title{display:flex;align-items:center;gap:9px;font-size:15.5px;font-weight:700;margin:0;}
+.section-title .num{
+  width:24px;height:24px;border-radius:7px;background:var(--info-bg);color:var(--primary);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;
+}
+
+/* ---------- EMPTY STATE ---------- */
+.empty-state{padding:60px 20px;text-align:center;color:var(--text-muted);}
+.empty-state svg{width:38px;height:38px;color:var(--text-faint);margin-bottom:10px;}
+.empty-state h3{font-size:15px;margin:0 0 4px;color:var(--text);}
+.empty-state p{font-size:13px;margin:0;}
+
+/* ---------- KANBAN (Kararlar) ---------- */
+.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;align-items:start;}
+@media(max-width:1100px){.kanban{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}}
+.kanban-col{background:var(--bg-secondary);border-radius:var(--radius);border:1px solid var(--border);padding:12px;min-height:120px;}
+.kanban-col-head{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 12px;}
+.kanban-col-head b{font-size:13px;}
+.kanban-count{background:var(--bg);border-radius:999px;padding:1px 9px;font-size:11.5px;font-weight:700;color:var(--text-muted);border:1px solid var(--border);}
+.kanban-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;margin-bottom:9px;cursor:pointer;transition:box-shadow .15s,transform .15s;}
+.kanban-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
+.kanban-card .kc-name{font-weight:700;font-size:13px;margin-bottom:3px;}
+.kanban-card .kc-role{font-size:11.6px;color:var(--text-muted);}
+
+/* ---------- TEAMS VIEW ---------- */
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}
+.team-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px 17px;box-shadow:var(--shadow-sm);}
+.team-card h3{font-size:14px;margin:0 0 3px;}
+.team-card .team-count{font-size:26px;font-weight:800;color:var(--primary);margin:6px 0 10px;}
+.team-mini-list{display:flex;flex-direction:column;gap:6px;max-height:150px;overflow-y:auto;}
+.team-mini-item{font-size:12.5px;display:flex;justify-content:space-between;gap:8px;padding:5px 8px;border-radius:7px;background:var(--bg-secondary);cursor:pointer;}
+.team-mini-item:hover{background:var(--info-bg);}
+
+/* ---------- TOAST ---------- */
+#toast{
+  position:fixed;bottom:22px;right:22px;z-index:100;
+  background:#111827;color:#fff;padding:11px 18px;border-radius:11px;font-size:13px;font-weight:600;
+  box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:9px;
+  opacity:0;transform:translateY(8px);pointer-events:none;transition:all .25s ease;
+}
+#toast.show{opacity:1;transform:translateY(0);}
+#toast svg{width:16px;height:16px;color:var(--success);}
+
+/* ---------- RESPONSIVE ---------- */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);box-shadow:var(--shadow-lg);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;padding:66px 16px 50px;}
+  .mobile-toggle{display:flex;}
+  .overlay.show{display:block;}
+  .kanban{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:560px){
+  .kanban{grid-template-columns:1fr;}
+  table.candidates{font-size:12.5px;}
+  .info-row{flex-direction:column;gap:3px;}
+  .info-row .v{text-align:left;}
+}
+
+.fade-in{animation:fadeUp .3s ease both;}
+</style>
+</head>
+<body>
+
+<button class="mobile-toggle" id="mobileToggle" aria-label="Menü">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
+</button>
+<div class="overlay" id="overlay"></div>
+
+<div id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">LG</div>
+      <div class="brand-text"><b>LogisticsGlossary</b><span>HR · Aday Sistemi</span></div>
+    </div>
+    <nav class="nav" id="mainNav">
+      <button class="nav-item" data-route="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" data-route="candidates">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Adaylar
+      </button>
+      <button class="nav-item" data-route="interviews">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Mülakatlar
+      </button>
+      <button class="nav-item" data-route="decisions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Kararlar
+      </button>
+      <button class="nav-item" data-route="teams">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>
+        Ekipler
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="save-indicator" id="saveIndicator"><span class="dot"></span><span id="saveIndicatorText">Kaydedildi</span></div>
+    </div>
+  </aside>
+
+  <main class="main" id="mainContent"></main>
+</div>
+
+<div id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+  <span id="toastText">Kaydedildi</span>
+</div>
+
+<script>
+/* =========================================================================
+   LogisticsGlossaryHR — Aday Değerlendirme ve Mülakat Yönetim Sistemi
+   Tek dosyalık, çalışan HTML uygulaması.
+   Veri kalıcılığı: window.storage (Claude Artifacts persistent storage API)
+   — localStorage / sessionStorage KULLANILMAZ. Bkz. üstteki mesaj.
+   ========================================================================= */
+
+/* ---------- 1. EXCEL'DEN AKTARILAN SABİT ADAY VERİLERİ (SEED) ---------- */
+const SEED_CANDIDATES = [
+{
+"kod": "a1",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Lisans",
+"universite": "DOKUZ EYLÜL ÜNİVERSİTESİ (İZMİR)",
+"bolum": "Lojistik Yönetimi",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Lojistik alanında edindiğim akademik bilgileri sektörel gelişmeler ve güncel terminolojiyle birleştirmek, aynı zamanda alanla ilgili bilgi ve deneyimlerimi paylaşmak için LogisticsGlossary’nin bir parçası olmak istiyorum. Lojistik sektöründe kendimi geliştirmeye devam ederken, sektöre fayda sağlayacak içerikler üretmenin ve farklı insanlarla bilgi alışverişinde bulunmanın benim için değerli bir deneyim olacağına inanıyorum.",
+"nasil_haberdar": "LinkedIn üzerinden lojistik sektöründeki içerikleri ve fırsatları takip ederken LogisticsGlossary’nin paylaşımına denk geldim. Platformun faaliyetlerini ve sunduğu gelişim fırsatlarını inceledikten sonra başvurmaya karar verdim.",
+"beklentiler": "Sektörün farklı alanlarında çalışan ve kendini geliştiren insanlarla bağlantı kurmayı, güncel lojistik uygulamaları ve sektörel terminolojiyi daha yakından takip etmeyi bekliyorum. Aynı zamanda öğrendiklerimi paylaşabileceğim ve profesyonel gelişimime katkı sağlayacak aktif bir topluluğun parçası olmak istiyorum.",
+"katki": "Lojistik Yönetimi alanındaki akademik bilgilerimin yanı sıra, farklı bir ülkede çalışma deneyimim sayesinde edindiğim adaptasyon, iletişim ve farklı kültürlerle çalışma becerilerimi platforma yansıtabileceğimi düşünüyorum. Özellikle lojistik terminolojisinin anlaşılır şekilde aktarılması, sektörel içeriklerin hazırlanması ve öğrenci/yeni mezun perspektifinin platforma kazandırılması konusunda katkı sağlayabilirim. Ayrıca araştırmayı, öğrenmeyi ve öğrendiklerimi paylaşmayı seven biri olarak aktif şekilde içerik üretmeye istekliyim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri",
+"yetkinlikler": "Excel, Canva, PowerPoint, Araştırma, Organizasyon, Proje yönetimi, Satış, İngilizce, İletişim",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Okulumuzun Amerikan futbolu takımında 5 sene boyunca hem mevki koçluğu hem de oyuncu olarak görev aldım bunun yanını sıra takımın resmi yönetim kurulunda bulundum",
+"lojistik_konu_ilgisi": "Tedarik Zinciri Yönetimi, Denizcilik",
+"ingilizce_seviyesi": "Orta Üstü (B2)",
+"konusma_seviyesi": "İyi",
+"diger_diller": "",
+"talep_edilen_rol": "Proje Asistanı",
+"proje_fikri": "Şu an için gerçekleştirmeyi planladığım spesifik bir proje bulunmuyor. Ancak ekibin çalışmalarını ve içerik üretim süreçlerini öğrenerek, kendi bilgi ve deneyimlerim doğrultusunda katkı sağlayabileceğim alanlarda aktif rol almak isterim. Ekip içerisinde yer aldıkça yeni fikirler geliştirip bunları projeye dönüştürmeye de açığım.",
+"farklilik": "Beni diğer adaylardan farklı kılan en önemli özelliklerim; farklı ortamlara hızlı adapte olabilmem, takım çalışmasına yatkınlığım ve öğrendiklerimi uygulamaya dönüştürme isteğimdir. Lojistik Yönetimi eğitimimin yanında farklı bir ülkede çalışma deneyimi edinmem, farklı kültürlerden insanlarla iletişim kurma ve yoğun çalışma ortamlarına uyum sağlama becerilerimi geliştirdi. Takım sporları geçmişim de disiplin, sorumluluk ve ekip çalışması konusunda bana önemli bir bakış açısı kazandırdı. Bu özelliklerimi LogisticsGlossary içerisinde hem öğrenen hem de aktif katkı sağlayan bir ekip üyesi olarak kullanabileceğimi düşünüyorum."
+},
+{
+"kod": "a2",
+"statu": "Çalışan / Profesyonel",
+"ogrenim_seviyesi": "Lisans",
+"universite": "İSTANBUL ÜNİVERSİTESİ",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "Taneks Otomotiv",
+"pozisyon": "İthalat-İhracat ve Lojistik operasyonlar",
+"neden_katilmak": "Kendimi geliştirmek ve bilgi ve deneyimlerimi kendini geliştirmek isteyen diğer insanlarla paylaşmak amacıyla.",
+"nasil_haberdar": "Linkedn",
+"beklentiler": "Dinamik ve güncel olan bilgileri yakalayan bir platform olması.",
+"katki": "İşin içinde olan biri olarak edindiğim tecrübelerimi paylaşmak isterim.",
+"ilgi_alanlari": "Akademik İçerik, Diğer, Lojistik & Tedarik Zinciri",
+"yetkinlikler": "Excel, Canva, Adobe Photoshop, Yapay zekâ araçları, Fotoğraf / Video, Diğer, Proje yönetimi, Organizasyon",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Üniversite döneminde gönüllü projelerin organizasyonlarında yer aldım.",
+"lojistik_konu_ilgisi": "Uluslararası Ticaret, Lojistik Yönetimi, Gümrük, Diğer",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "Arapça A2",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "İthalat ve ihracat gümrük işlemleri, mevzuat ve incoterms ile ilgili bilgi ve deneyimlerimi paylaşarak içerikler üretmek.",
+"farklilik": "Herkes farklıdır. Herkes sıradan ve aynı zamanda özeldir. Diğer insanlardan farklı olduğumu söyleyebilmek için karşılaştırma yapmak gerekir. Bu noktda diğer insanların bilgisine sahip olan platform benim farkımı tespit edebilir ancak."
+},
+{
+"kod": "a3",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "ANKARA ÜNİVERSİTESİ",
+"bolum": "Lojistik Yönetimi",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Gelecekteki işlerime ön hazırlık yapabilmek, kendimi ve bu topluluğu geliştirmek istiyorum.",
+"nasil_haberdar": "LinkedIn üzerinden tanıdım.",
+"beklentiler": "Kendimi Lojistik Sektöründe geliştirebilmek, grup çalışmalarında aktif rol alabilmem ve sosyal ağımı genişletebilmeme yardımcı olacağına inanıyorum.",
+"katki": "Topluluğu duyurmak ve bir adım ötesine taşımak için elimden geleni yapacağım.",
+"ilgi_alanlari": "Proje Yönetimi, Üniversite Temsilciliği, Sosyal Medya, Topluluk Yönetimi, Lojistik & Tedarik Zinciri, Yapay Zeka, İnsan Kaynakları, İletişim & Halkla İlişkiler, Araştırma & Raporlama",
+"yetkinlikler": "Excel, PowerPoint, Canva, SQL, Python, Sosyal medya yönetimi, Proje yönetimi, Sunum, Araştırma",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Ankara Üniversitesi Lojistik Topluluğunda yer alıyorum. Lisede belirli kulüplerde etkin rol aldım.",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Demiryolu, Yapay Zeka, Lojistik Teknolojileri, Lojistikte Veri Analitiği, Tedarik Zinciri Yönetimi",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "Etkinlik Ekibi",
+"proje_fikri": "Ekip içinde lojistik operasyonları ve sektörel gelişmeler üzerine bilgi paylaşımlarını artıracak projeler geliştirebilirim. Sektördeki yenilikleri ve güncel trendleri araştırarak topluluğun faydalanabileceği bilgi notlarına dönüştürebilirim.",
+"farklilik": "Bireysel görevleri yerine getirmekle kalmayıp, grup içindeki iletişimi güçlendirmek ve ortak hedefler için çabalarım."
+},
+{
+"kod": "a4",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Lisans",
+"universite": "UŞAK ÜNİVERSİTESİ",
+"bolum": "Lojistik Yönetimi",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Kariyer, iş bulmak için",
+"nasil_haberdar": "Linkedin",
+"beklentiler": "İş bulmak",
+"katki": "Tüm bilgi ve deneyimlerimi",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri",
+"yetkinlikler": "Excel, PowerPoint, Fotoğraf / Video",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": "Yok",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Uluslararası Ticaret, Depo & Stok Yönetimi, Taşımacılık, Üretim & Operasyon, Gümrük, Demiryolu, Havacılık, E-ticaret Lojistiği, Lojistikte Veri Analitiği, Karayolu Taşımacılığı, Dış Ticaret",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Şuanlık yok",
+"farklilik": "Araştırmayı severim"
+},
+{
+"kod": "a5",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Lisans",
+"universite": "BAŞKENT ÜNİVERSİTESİ (ANKARA)",
+"bolum": "Uluslararası Ticaret ve Finansman",
+"kurum": "Samsun Ayan Oto Geri Dönüşüm Sistemleri",
+"pozisyon": "Yönetim ve Organizasyon",
+"neden_katilmak": "Güncel bilgilerden haberdar olmak, bölümüme katkı sağlamak ve eğitmen olarak kariyerime yön vermek istiyorum.",
+"nasil_haberdar": "Linkedln üzerinden gördüm.",
+"beklentiler": "Kendimi geliştirip kariyerime katkı sağlayacağını düşünüyorum.",
+"katki": "İlk başta gönüllü eğitmen olarak başlayıp sonrasında öğretim elemanı veya danışman gibi olmak ve kendimi geliştirmek istiyorum.",
+"ilgi_alanlari": "Eğitim & Eğitim Organizasyonu, Lojistik & Tedarik Zinciri, Akademik İçerik, Araştırma & Raporlama, YouTube",
+"yetkinlikler": "Excel, PowerPoint, Canva, Adobe Photoshop, CapCut, Yapay zekâ araçları, Araştırma, Akademik yazım, Fotoğraf / Video, İngilizce, Proje yönetimi, Pazarlama, Organizasyon, Sunum, Sosyal medya yönetimi",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Ostim Teknik Üniversitesi'nde Lojistik okurken kendi Lojistik kulübümüz vardı. Hatta okulumuzun Pitching Day yarışmasına katılmıştık.",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Uluslararası Ticaret, Gümrük, E-ticaret Lojistiği, Dış Ticaret, Akademik Araştırma, Sürdürülebilirlik, Demiryolu, Karayolu Taşımacılığı, Taşımacılık",
+"ingilizce_seviyesi": "Orta Üstü (B2)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Proje Asistanı",
+"proje_fikri": "Öğrencilere eğitim verip yol göstermek istiyorum. Projelerde ve yarışmalarda yer almak isterim. Kendime uygun olduğum alanı bulmak ve uzmanlaşmak istiyorum.",
+"farklilik": "Hırslıyım, öğrenmeyi seviyorum, tek bir alana bağlı kalmıyorum. Boş zamanlarımda bile kendime bir şeyler katmaya çalışıyorum. Yardımseverim ve birilerinin hayatına dokunmak beni mutlu eder."
+},
+{
+"kod": "a6",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "ÇANAKKALE ONSEKİZ MART ÜNİVERSİTESİ",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "Barlas lojistik",
+"pozisyon": "Lojistik stajyeri",
+"neden_katilmak": "Çünkü kendime bir şeyler katmak istiyorum her alanda bilgi sahibi olmak istiyorum , öğrenmeye açığım .",
+"nasil_haberdar": "Linkedindan",
+"beklentiler": "Lojistik alanındaki temel terimleri ve süreçleri öğrenerek sektörel terminolojiye daha iyi hakim olmayı bekliyorum .",
+"katki": "Sahada ve günlük operasyonlarda sık kullanılan terimleri , kısaltmaları ve pratik ifadeleri paylaşarak glossaryinin geliştirilmesine katkıda bulunabileceğimi düşünüyorum .",
+"ilgi_alanlari": "Araştırma & Raporlama, Lojistik & Tedarik Zinciri, Teknoloji / Yazılım, Veri Analizi, Sponsorluk & İş Birlikleri, İş Geliştirme, Kurumsal İletişim, Etkinlik Organizasyonu",
+"yetkinlikler": "Excel, PowerPoint, Pazarlama, Proje yönetimi, Sunum",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Çanakkale biga gençlik merkezindeki çoğu etkinliğe katılmıştım . Gönüllü olarak da 23 nisanda özel eğitim çocuklarına palyaçoluk yapıp onlarla eğlendim.",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Uluslararası Ticaret, Taşımacılık, Depo & Stok Yönetimi, Satın Alma, Gümrük, Dış Ticaret, Havacılık, Denizcilik, Karayolu Taşımacılığı, Akademik Araştırma, E-ticaret Lojistiği",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Yok",
+"farklilik": "Öğrenmeye açık olmam . Her zaman her şeyi yapabileceğime inanmam ."
+},
+{
+"kod": "a7",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Ön Lisans",
+"universite": "YAŞAR ÜNİVERSİTESİ (İZMİR)",
+"bolum": "Lojistik",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Lojistik sektöründeki bilgilerimi geliştirmek, sektörü daha yakından tanımak ve yeni insanlarla bağlantı kurmak için katılmak istiyorum.",
+"nasil_haberdar": "LinkedIn üzerinden gördüm ve araştırarak bilgi sahibi oldum.",
+"beklentiler": "Sektörel bilgiler edinmek, kendimi geliştirmek ve kariyerime katkı sağlayacak bağlantılar kurmak.",
+"katki": "Lojistik alanındaki bilgi ve deneyimlerimi paylaşarak platforma katkı sağlayabileceğimi düşünüyorum.",
+"ilgi_alanlari": "Sosyal Medya, Araştırma & Raporlama, Akademik İçerik, Topluluk Yönetimi, Kurumsal İletişim, Yapay Zeka, Veri Analizi, Lojistik & Tedarik Zinciri, Proje Yönetimi",
+"yetkinlikler": "Excel, PowerPoint, Canva, Yapay zekâ araçları, İçerik yazarlığı, Sosyal medya yönetimi",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Yaşar Üniversitesi Dış Ticaret Topluluğu Yönetim Kurulu Başkan Yardımcılığı",
+"lojistik_konu_ilgisi": "Tedarik Zinciri Yönetimi, Depo & Stok Yönetimi, Gümrük, Dış Ticaret, E-ticaret Lojistiği, Lojistik Teknolojileri, Lojistikte Veri Analitiği",
+"ingilizce_seviyesi": "Orta Üstü (B2)",
+"konusma_seviyesi": "İyi",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Lojistik alanında güncel gelişmeleri ve sektörel bilgileri bir araya getiren içeriklerin hazırlanmasına katkı sağlamak isterim. Özellikle öğrenci ve yeni mezunlara yönelik faydalı içerik fikirleri sunabilirim.",
+"farklilik": "Öğrenmeye açık, araştırmacı, iletişimi güçlü, düzenli ve planlı çalışmayı seven biriyim. Lojistik alanında kendimi sürekli geliştirmeye ve öğrendiklerimi paylaşmaya önem veriyorum."
+},
+{
+"kod": "a8",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "KOCAELİ ÜNİVERSİTESİ",
+"bolum": "Denizcilik İşletmeleri Yönetimi",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Tedarik zinciri ve lojistik alanında kendimi ciddi anlamda geliştirmek,network ağımı genişletmek,üretkenliğimi,verimliliğimi ve en önemlisi sektörel bilinç düzeyimi artırmak amacıyla katılmak istiyoru.",
+"nasil_haberdar": "Linkedln platformundan ekibinizi takip etmem sonucunda bilgi sahibi oldum.",
+"beklentiler": "Sosyal kültürüme değer katmak ve sektörel hakimliğimi arttırmak en büyük beklentilerim arasındadır.",
+"katki": "Üretkenliğime,problem çözme yeteneğime,analatik düşünme kişiliğime olan güvencim sayesinde yararlı olabileceğime inanıyorum.",
+"ilgi_alanlari": "Akademik İçerik, Lojistik & Tedarik Zinciri, Veri Analizi, Proje Yönetimi, Eğitim & Eğitim Organizasyonu, İş Geliştirme, Sponsorluk & İş Birlikleri, Diğer",
+"yetkinlikler": "Excel, Canva, Veri analizi, Akademik yazım, Fotoğraf / Video, İçerik yazarlığı, Organizasyon, İngilizce, Proje yönetimi, Satış, Pazarlama, İletişim, Sunum, Araştırma, Diğer",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Barbaros denizcilik kulübü,akademik projeler,linkedln üzerinden sektörel araştırma yazımları",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Uluslararası Ticaret, Üretim & Operasyon, Denizcilik, Karayolu Taşımacılığı, Akademik Araştırma, Diğer",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "İyi",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Uygun görülmem durumda ekibin içindeyken net bir başlık sonucunda istenen proje veya fikir sunma çözümlerini yerine getirebilirim",
+"farklilik": "Sektörel deneyim düzeyim,ingilizce seviyem,kişilik özelliklerim ve akademik başarım"
+},
+{
+"kod": "a9",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Lisans",
+"universite": "ONDOKUZ MAYIS ÜNİVERSİTESİ (SAMSUN)",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Uluslararası ticaret ve lojistik alanındaki güncel gelişmeleri, sektörel terminolojiyi ve pratik uygulamaları yakından takip etmek; teorik bilgimi sektörün dinamikleriyle harmanlamak istiyorum. LogisticsGlossary’nin bu alanda oluşturduğu nitelikli bilgi havuzu ve network içinde yer alarak hem mesleki gelişimimi sürdürmeyi hem de sektör profesyonelleriyle etkileşimde bulunmayı hedefliyorum.",
+"nasil_haberdar": "Sektörel ağlar, LinkedIn paylaşımları ve dış ticaret/lojistik odaklı profesyonel topluluk duyuruları vasıtasıyla haberdar oldum.",
+"beklentiler": "Lojistik ve dış ticaret süreçlerine dair en güncel ve doğru bilgiye erişim sağlamak, sektör profesyonelleriyle bilgi ve deneyim paylaşımında bulunmak. Ayrıca vaka analizleri, sektörel tartışmalar ve network fırsatlarıyla mesleki vizyonumu geliştirmeyi bekliyorum.",
+"katki": "Uluslararası Ticaret ve Lojistik alanındaki altyapım, sahada/staj süreçlerimde edindiğim pratik bakış açım ve topluluk projelerindeki aktif iletişim yeteneğimle platforma dinamik bir katkı sunabilirim. İçerik üretimi, sektörel tartışmalara katılım ve platform içi etkileşimi canlı tutma noktalarında katma değer sağlayacağıma inanıyorum.",
+"ilgi_alanlari": "Akademik İçerik, Lojistik & Tedarik Zinciri, Yapay Zeka, İçerik Üretimi, Sosyal Medya",
+"yetkinlikler": "Excel, Canva, PowerPoint, CapCut, Yapay zekâ araçları, Araştırma, Akademik yazım, Sunum, İngilizce",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Toplum Gönüllüleri Vakfı (TOG) – Aktif Gönüllü (1 Yıl) Sosyal sorumluluk projeleri kapsamında köy/mahalle okullarının boyanması ve yenilenmesi faaliyetlerinde aktif rol aldım. İlköğretim öğrencilerine yönelik akran eğitimi ve ders desteği sağladım. Toplumsal farkındalık projelerinde ekip içi koordinasyon ve saha organizasyonlarında görev üstlendim.",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Uluslararası Ticaret, Taşımacılık, Depo & Stok Yönetimi, Gümrük, Dış Ticaret, Denizcilik, Havacılık, Karayolu Taşımacılığı, Demiryolu, E-ticaret Lojistiği, Lojistik Teknolojileri, Sürdürülebilirlik, Akademik Araştırma, Lojistikte Veri Analitiği, Üretim & Operasyon, Yapay Zeka, Satın Alma",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Uluslararası Ticaret ve Lojistik alanındaki akademik altyapımı, dijital içerik üretimi ve sosyal medya dinamiklerine olan hakimiyetimle birleştirmek istiyorum. Platform bünyesinde karmaşık lojistik terimlerini, gümrük/dış ticaret süreçlerini ve güncel sektörel vakaları kısa, dinamik ve görsel içeriklere (infografikler, kısa videolar veya rehber serileri) dönüştüren bir içerik serisi başlatmayı hedefliyorum. Böylece platformun genç profesyoneller ve öğrenciler arasındaki erişilebilirliğini ve etkileşimini artırabilirim.",
+"farklilik": "Uluslararası Ticaret ve Lojistik alanında dereceyle tamamladığım lisans eğitimim ve gümrük/ulaştırma idarelerindeki staj deneyimlerim sayesinde hem teorik hem de pratik sektörel bilgiye sahibim. Bunun yanı sıra, sivil toplum ve gönüllülük projelerinde edindiğim güçlü iletişim, ekip çalışması ve organizasyon becerilerini; dijital içerik üretimi vizyonuyla birleştirebilmem beni öne çıkaran en önemli faktördür. Hem sektörel disipline hem de topluluk odaklı dinamik bir çalışma anlayışına sahibim."
+},
+{
+"kod": "a10",
+"statu": "Çalışan / Profesyonel",
+"ogrenim_seviyesi": "Lisans",
+"universite": "ÇANKAYA ÜNİVERSİTESİ (ANKARA)",
+"bolum": "Uluslararası Ticaret",
+"kurum": "EREN HOLDİNG",
+"pozisyon": "HEAD OF LOGISTICS",
+"neden_katilmak": "ORGANİZASYONLARDA KONUŞMACI, EĞİTMEN VB GÖREVLER ALABİLİRİM",
+"nasil_haberdar": "LINKEDIN ÜZERİNDEN",
+"beklentiler": "NETWORK",
+"katki": "TECRÜBE BİLGİ VE NEWTWORK",
+"ilgi_alanlari": "İçerik Üretimi, Sosyal Medya, YouTube, Video / Reels, Araştırma & Raporlama, Eğitim & Eğitim Organizasyonu, Etkinlik Organizasyonu, İş Geliştirme, Sponsorluk & İş Birlikleri, Lojistik & Tedarik Zinciri",
+"yetkinlikler": "Excel, PowerPoint, Veri analizi, Araştırma, Fotoğraf / Video, Sunum, İletişim, Organizasyon, Proje yönetimi, İngilizce, Diğer",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Bir çok üniversite topluluğunda eğitim,seminer,fuar,konuşmacı olarak katılımlarda bulundum",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Uluslararası Ticaret, Taşımacılık, Depo & Stok Yönetimi, Satın Alma, Üretim & Operasyon, Gümrük, Dış Ticaret, Denizcilik, Havacılık, Karayolu Taşımacılığı, Demiryolu, E-ticaret Lojistiği, Lojistik Teknolojileri",
+"ingilizce_seviyesi": "İleri Düzey (C2)",
+"konusma_seviyesi": "İleri",
+"diger_diller": "Arnavutça(orta),Türkçe(ana dil),Rusça (başlangıç)",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "panel fuar vb etkinlikler olabilir",
+"farklilik": "yurtiçi yurt dışı lojistiğin tüm dallarında tecrübe sahibi olmam"
+},
+{
+"kod": "a11",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Ön Lisans",
+"universite": "UŞAK ÜNİVERSİTESİ",
+"bolum": "Lojistik",
+"kurum": "ptt",
+"pozisyon": "",
+"neden_katilmak": "iş bulmak için",
+"nasil_haberdar": "arkadaşımın paylaşımlarıyla",
+"beklentiler": "daha kapsamlı ögrenmek araştırma yapmak",
+"katki": "güzel şeyler",
+"ilgi_alanlari": "İş Geliştirme, Lojistik & Tedarik Zinciri, Proje Yönetimi, Teknoloji / Yazılım",
+"yetkinlikler": "Excel, PowerPoint, Araştırma, Pazarlama, Satış, Proje yönetimi, Organizasyon, İletişim, Veri analizi, İngilizce, CapCut, Akademik yazım",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": "ptt de staj",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Taşımacılık, Depo & Stok Yönetimi, Uluslararası Ticaret, E-ticaret Lojistiği, Lojistikte Veri Analitiği, Lojistik Teknolojileri, Tedarik Zinciri Yönetimi, Üretim & Operasyon",
+"ingilizce_seviyesi": "Başlangıç (A1)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Proje Asistanı",
+"proje_fikri": "iş bulmak",
+"farklilik": "iletişim satış"
+},
+{
+"kod": "a12",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Ön Lisans",
+"universite": "SELÇUK ÜNİVERSİTESİ (KONYA)",
+"bolum": "Lojistik",
+"kurum": "Afo makina",
+"pozisyon": "Dış ticaret/Lojistik",
+"neden_katilmak": "Kendimi geliştirmek için",
+"nasil_haberdar": "Linkedin tarafından",
+"beklentiler": "Bilgilerimi arttırması",
+"katki": "beni cidden geliştiriceigni düşünüyorum",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri",
+"yetkinlikler": "Excel, İngilizce, İletişim, Proje yönetimi, Araştırma, Veri analizi, PowerPoint, Sosyal medya yönetimi, Satış",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "TÜBİTAK",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Uluslararası Ticaret, Tedarik Zinciri Yönetimi, Depo & Stok Yönetimi, Satın Alma, Dış Ticaret, Lojistikte Veri Analitiği, Taşımacılık, Üretim & Operasyon, Gümrük",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "İyi",
+"diger_diller": "İspanyolca a1",
+"talep_edilen_rol": "Şehir Temsilcisi",
+"proje_fikri": "Suan yok ama olucgaına eminim",
+"farklilik": "Bu konuda bilgim olması"
+},
+{
+"kod": "a13",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "SAKARYA ÜNİVERSİTESİ",
+"bolum": "Uluslararası Ticaret ve Finansman",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Uluslararası ticaret son sınıf öğrencisiyim ve mezun olmak için zorunlu stajımı tamamlamam gerekiyor. 4 aylık bu zorunlu stajım için kariyerime katkı sağlayacak güçlü firmalar arıyorum",
+"nasil_haberdar": "Network ağımdan önemli bir arkadaşım önerdi",
+"beklentiler": "Zorunlu stajımı tamamlayabileceğim ve bana katlı sağlayacak iyi bir firma bulabilmeyi amaçlıyorum",
+"katki": "Kariyerimde başarılara imza atarken network sağlamak",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri",
+"yetkinlikler": "Excel, PowerPoint, Canva, Sosyal medya yönetimi, Pazarlama, Satış, Proje yönetimi, İngilizce, Sunum, İletişim, Araştırma",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "12gün37 derece iş topluluğunda finans ve sponsorluk kaptanıydım. Firmalarla görüşüp topluluğumuza sponsor buluyordum ve etkinliklerimizin finansal durumunu yönetiyordum. Aynı zamanda Utrader derneğinde kırmızı takım kaptanıydım",
+"lojistik_konu_ilgisi": "Uluslararası Ticaret, Dış Ticaret, Karayolu Taşımacılığı, Lojistik Yönetimi",
+"ingilizce_seviyesi": "Orta Üstü (B2)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Dış ticaret ve lojistik alanında çalışmalar",
+"farklilik": "Satış ve pazarlama konusunda küçüklükten gelen bir çevrem olduğu için hakimim. çalışma konusunda istekli ve azimliyim"
+},
+{
+"kod": "a14",
+"statu": "Çalışan / Profesyonel",
+"ogrenim_seviyesi": "Lisans",
+"universite": "ANADOLU ÜNİVERSİTESİ (ESKİŞEHİR)",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "",
+"pozisyon": "Uzman",
+"neden_katilmak": "İstiyorum",
+"nasil_haberdar": "Linkdln",
+"beklentiler": "Eğitim",
+"katki": "Deneyim",
+"ilgi_alanlari": "Üniversite Temsilciliği",
+"yetkinlikler": "Excel, PowerPoint, Veri analizi, İletişim, Organizasyon",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": ".",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Taşımacılık, Depo & Stok Yönetimi, Karayolu Taşımacılığı, Lojistikte Veri Analitiği",
+"ingilizce_seviyesi": "Başlangıç (A1)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "Şehir Temsilcisi",
+"proje_fikri": ".",
+"farklilik": "."
+},
+{
+"kod": "a15",
+"statu": "Diğer",
+"ogrenim_seviyesi": "Ön Lisans",
+"universite": "SÜLEYMAN DEMİREL ÜNİVERSİTESİ (ISPARTA)",
+"bolum": "Lojistik",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Lojistik ve tedarik zinciri alanındaki güncel gelişmeleri takip etmek, sektörel bilgilerimi geliştirmek ve farklı alanlarda çalışan profesyonellerin deneyimlerinden faydalanmak için LogisticsGlossary’ye katılmak istiyorum. Lojistik alanındaki eğitimime lisans düzeyinde devam ederken, SAP MM, SD ve PP bilgilerimi sektördeki güncel uygulamalarla destekleyerek kendimi geliştirmeyi hedefliyorum.",
+"nasil_haberdar": "LinkedIn üzerinden lojistik sektörüne yönelik içerikleri ve profesyonelleri takip ederken LogisticsGlossary ile karşılaştım. Paylaşılan sektörel içerikler ilgimi çekti ve platformu daha yakından tanımak istedim.",
+"beklentiler": "Lojistik ve tedarik zinciri sektöründeki güncel uygulamalar hakkında bilgi edinmek, farklı uzmanlık alanlarını tanımak, sektör profesyonellerinin deneyimlerinden faydalanmak ve mesleki networkümü geliştirmek. Devam ettiğim lisans eğitimini sektörel bilgilerle destekleyerek kariyer hedeflerime daha donanımlı ilerlemek istiyorum.",
+"katki": "Lojistik alanındaki eğitimim, devam eden lisans eğitimim, SAP MM, SD ve PP bilgilerim ve sektöre olan ilgim doğrultusunda edindiğim bilgileri paylaşabileceğimi düşünüyorum. Öğrenmeye ve kendimi geliştirmeye açık biriyim; platform içerisindeki bilgi paylaşımına ve etkileşime aktif olarak katkı sağlamak isterim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri",
+"yetkinlikler": "Excel, PowerPoint, Satış, Pazarlama, Diğer, Organizasyon, Proje yönetimi",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Asya Topluluğu, IMYOLOJISTIK lojistik elçiliği. Asya Topluluğu ve IMYOLOJISTIK lojistik Elçiliği kapsamında; lojistik sektörü, tedarik zinciri, depo ve taşımacılık süreçleri hakkında araştırmalar yaptım. Öğrencilik döneminde gerçekleştirilen etkinlik, proje ve sektör odaklı çalışmalara katılım sağlayarak lojistik süreçleri hakkında teorik ve uygulamaya yönelik bilgi edinme fırsatı buldum.",
+"lojistik_konu_ilgisi": "Tedarik Zinciri Yönetimi, Uluslararası Ticaret, Lojistik Yönetimi, Depo & Stok Yönetimi, Satın Alma, Üretim & Operasyon, Gümrük, Denizcilik, Havacılık, Karayolu Taşımacılığı, Demiryolu, E-ticaret Lojistiği, Lojistik Teknolojileri, Yapay Zeka, Sürdürülebilirlik, Lojistikte Veri Analitiği, Akademik Araştırma, Diğer, Dış Ticaret",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Lojistik alanında edindiğim akademik bilgileri uygulamaya dönüştürmeye yönelik; lojistik süreçlerin dijitalleştirilmesi, temel lojistik terimlerin sade ve anlaşılır şekilde aktarılması ve öğrencilerin sektörel bilgiye daha kolay ulaşabilmesi üzerine katkı sunmak isterim. Özellikle SAP, depo yönetimi, stok takibi, satın alma ve tedarik zinciri süreçleri konularındaki bilgilerimi paylaşarak platformun içerik geliştirme çalışmalarına destek olabilirim.",
+"farklilik": "Lojistik eğitiminin yanı sıra SAP MM, SD ve PP alanlarında eğitim almış olmam, teorik bilgiyi sektörel süreçlerle ilişkilendirebilmem ve yeni bilgiler öğrenmeye açık olmam beni farklılaştıran özellikler arasında. Ayrıca lisans eğitimime açıköğretim üzerinden devam ediyor olmam sayesinde kendimi geliştirmeye ve alanımdaki güncel bilgileri takip etmeye önem veriyorum."
+},
+{
+"kod": "a16",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "İZMİR EKONOMİ ÜNİVERSİTESİ",
+"bolum": "Lojistik Yönetimi",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Lojistik alanında kariyerimi geliştirmek istediğim için LogisticsGlossary’ye katılmak istiyorum. Üniversite eğitimimin yanı sıra staj deneyimlerim sayesinde lojistik, dış ticaret ve operasyon süreçlerini yakından tanıma fırsatı buldum. LogisticsGlossary’nin sektörel bilgi paylaşımı ve gelişim odaklı yapısının hem bilgilerimi artırmama hem de farklı bakış açıları kazanmama katkı sağlayacağını düşünüyorum. Aynı zamanda öğrendiklerimi paylaşabileceğim ve lojistik alanında kendimi geliştiren kişilerle etkileşim kurabileceğim bir topluluğun parçası olmak istiyorum.",
+"nasil_haberdar": "“LogisticsGlossary hakkında LinkedIn üzerinden bilgi sahibi oldum. Kurucusunun lojistik sektörü ve LogisticsGlossary ile ilgili paylaşımlarını bir süredir takip ediyorum. Bu paylaşımlar sayesinde topluluğun çalışmalarını ve sunduğu fırsatları daha yakından tanıma fırsatı buldum.”",
+"beklentiler": "Platformdan beklentim, lojistik ve dış ticaret alanındaki sektörel bilgilerimi geliştirmek, güncel gelişmeleri takip etmek ve farklı deneyimlere sahip kişilerden yeni bakış açıları kazanmak. Aynı zamanda sektör profesyonelleri ve benim gibi bu alanda kendini geliştirmek isteyen kişilerle iletişim kurarak networkümü genişletmek istiyorum.",
+"katki": "Öğrenmeye açık ve araştırmayı seven biri olarak LogisticsGlossary’ye aktif katılım sağlayabileceğimi düşünüyorum. Üniversitede edindiğim teorik bilgileri ve staj süreçlerinde kazandığım deneyimleri farklı bakış açılarıyla paylaşarak topluluğa katkı sunabilirim. Aynı zamanda etkinliklere, içeriklere ve sektörel paylaşımlara aktif şekilde dahil olarak topluluğun gelişimine destek olmak isterim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, İş Geliştirme, Üniversite Temsilciliği, Araştırma & Raporlama, Proje Yönetimi, Etkinlik Organizasyonu",
+"yetkinlikler": "İngilizce, Satış, Excel, PowerPoint, Canva, CapCut, Araştırma, Python, Yapay zekâ araçları, İletişim, Sunum, Organizasyon",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "İzmir Ekonomi Üniversitesi Lojistik Kulübü – Yönetim Kurulu Üyeliği ve Teknik Gezi Sorumluluğu; kulüp faaliyetlerinin planlanması, teknik gezilerin organize edilmesi ve koordinasyon süreçlerinde görev alma. Etkin Kampüs – Üniversite Temsilciliği ve Etkinlik Planlama Yönetim Kurulu Üyeliği; etkinliklerin planlanması, organizasyonu, öğrenci iletişimi ve üniversite içi temsil süreçlerinde görev alma. İzmir Ekonomi Rotaract Kulübü – Misafir Üye; sosyal sorumluluk ve yardım faaliyetleri ile kulüp etkinliklerine katılım. DOGO – Lojistik/Depo ve Dış Ticaret Stajyeri; lojistik operasyonlar, sevkiyat süreçleri, ERP sistemleri, dış ticaret belgeleri ve operasyonel süreçlerde görev alma.",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Satın Alma, Dış Ticaret, Denizcilik, Havacılık, E-ticaret Lojistiği, Tedarik Zinciri Yönetimi, Uluslararası Ticaret, Depo & Stok Yönetimi",
+"ingilizce_seviyesi": "Orta Üstü (B2)",
+"konusma_seviyesi": "İyi",
+"diger_diller": "Almanca",
+"talep_edilen_rol": "Proje Asistanı",
+"proje_fikri": "Lojistik sektörünü öğrenciler için daha erişilebilir hale getirecek çalışmalar gerçekleştirmek isterim. Özellikle farklı lojistik alanlarını ve kariyer olanaklarını tanıtan sektör profesyonelleriyle söyleşi, teknik gezi ve bilgilendirici içerik serileri oluşturulmasına katkı sağlamak isterim. Ayrıca öğrencilerin sektördeki güncel gelişmeleri ve farklı kariyer yollarını daha yakından tanıyabilecekleri proje ve etkinliklerin planlanmasında aktif rol almak isterim.",
+"farklilik": "Beni diğer adaylardan farklı kılan özelliğim, öğrenmeye açık olmamın yanında öğrendiklerimi farklı alanlarda deneyimlemeye çalışmam olduğunu düşünüyorum. Lojistik ve tedarik zincirini yalnızca akademik olarak değil, stajlarım sayesinde operasyon ve dış ticaret süreçlerinde de gözlemleme fırsatı buldum. Bunun yanında öğrenci topluluklarında yönetim, etkinlik organizasyonu ve temsilcilik görevleri üstlendim. Bu nedenle hem sektörel hem de ekip çalışması ve organizasyon tarafında farklı deneyimleri bir araya getirebildiğimi düşünüyorum."
+},
+{
+"kod": "a17",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "İSTANBUL AREL ÜNİVERSİTESİ",
+"bolum": "Bilgisayar Mühendisliği",
+"kurum": "",
+"pozisyon": "Pazarlama & Satış",
+"neden_katilmak": "-",
+"nasil_haberdar": "LinkedIn",
+"beklentiler": "-",
+"katki": "-",
+"ilgi_alanlari": "Kurumsal İletişim, Etkinlik Organizasyonu, Proje Yönetimi, Diğer, Sponsorluk & İş Birlikleri, Sosyal Medya",
+"yetkinlikler": "Excel, PowerPoint, Canva, Yapay zekâ araçları, Proje yönetimi, Satış, Pazarlama, İngilizce, Organizasyon, Sosyal medya yönetimi, Akademik yazım, Araştırma, İçerik yazarlığı, Sunum, İletişim",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "TEKNOFEST TUBİTAK-2209 A Google Dev. Club",
+"lojistik_konu_ilgisi": "E-ticaret Lojistiği, Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Depo & Stok Yönetimi, Üretim & Operasyon, Satın Alma, Sürdürülebilirlik",
+"ingilizce_seviyesi": "Orta Üstü (B2)",
+"konusma_seviyesi": "İyi",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "-",
+"farklilik": "-"
+},
+{
+"kod": "a18",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Lisans",
+"universite": "AYDIN ADNAN MENDERES ÜNİVERSİTESİ",
+"bolum": "Lojistik Yönetimi",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Lojistik Yönetimi mezunuyum ve sektörde kendimi geliştirmek istiyorum. LogisticsGlossary’nin sektördeki gelişmeleri ve farklı deneyimleri takip etmek için güzel bir platform olduğunu düşünüyorum. Ben de hem öğrenmek hem de sektöre daha yakından dahil olmak için katılmak istiyorum.",
+"nasil_haberdar": "Lojistik sektörünü ve sektördeki gelişmeleri araştırırken sosyal medya üzerinden karşılaştım. İçeriklerini inceledikçe ilgimi çekti ve takip etmeye başladım.",
+"beklentiler": "Sektördeki gelişmeleri takip etmek, farklı insanlardan ve deneyimlerden öğrenmek ve kendimi geliştirmek istiyorum. Aynı zamanda lojistik alanında yeni bir çevre edinmeyi bekliyorum.",
+"katki": "Lojistik Yönetimi eğitimim ve depo operasyonlarında edindiğim deneyimler sayesinde platforma katkı sağlayabileceğimi düşünüyorum. Ayrıca tezimi depo yönetiminde dijitalleşme ve yapay zekâ entegrasyonunun operasyonel verimliliğe etkisi üzerine yaptım. Bu alandaki ilgimi ve öğrendiklerimi platformda paylaşarak katkıda bulunmak isterim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, Yapay Zeka, Araştırma & Raporlama",
+"yetkinlikler": "Excel, PowerPoint, Canva, Yapay zekâ araçları, Sunum, İletişim, Pazarlama, Araştırma, Diğer",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Aydın Adnan Menderes Üniversitesi’nde lojistik topluluğu ve denizcilik topluluğunun aktif üyesiydim. Etkinliklere katkıda bulunup katılım sağladım.",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Depo & Stok Yönetimi, Denizcilik, Yapay Zeka, E-ticaret Lojistiği, Taşımacılık, Üretim & Operasyon",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Depo operasyonlarında dijitalleşme ve yapay zekânın kullanımı üzerine içerik veya küçük bir araştırma çalışması yapmak isterim. Tezim de bu konu üzerine olduğu için bu alandaki bilgilerimi LogisticsGlossary içerisinde paylaşabileceğimi düşünüyorum.",
+"farklilik": "Lojistik Yönetimi eğitimim boyunca hem farklı depo ve lojistik operasyonlarını görme hem de sahada deneyim kazanma fırsatım oldu. Ekol’de elleçleme, mal kabul ve depo düzeni süreçlerinde; Arvato’da İpekyol operasyonunda ürün kontrolü, sayım ve mal kabul süreçlerinde görev aldım. Beyçelik Gestamp’ta ise stajımı iç ve dış lojistik, sevkiyat ve stok takibi süreçlerini deneyimledim. Son olarak Hepsiburada’da mal kabul ve ürün girişi süreçlerinde çalışarak depo operasyonlarını daha yakından gözlemledim. Bu deneyimlerin yanında bitirme tezimi depo yönetiminde dijitalleşme ve yapay zekâ entegrasyonunun operasyonel verimliliğe etkisi üzerine yaptım. Bu birikimimi kullanarak özellikle depo operasyonları, lojistikte dijitalleşme ve yapay zekâ gibi konularda içerik ve araştırmalar hazırlayarak LogisticsGlossary’ye katkı sağlamak isterim."
+},
+{
+"kod": "a19",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "ORDU ÜNİVERSİTESİ",
+"bolum": "Denizcilik İşletmeleri Yönetimi",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Lojistik alanında dah çok bilgi ve deneyim sahibi olabilmek kendimi geliştirmek ,edindiğim ve edineceğim bilgi ve tecrübeleri daha yararlı kullanabilmek için Logistics Glossary'ye katılmayı isterim.",
+"nasil_haberdar": "LinkedIn sayesinde hakkında bilgi edilebildim sonrasında diğer sosyal platformlardan takibine başladım.",
+"beklentiler": "Lojistik alanında başta olmak üzere başka alanlarda bizlere tanınabilecek bilgi , eğitim , deneyimlerden yararlanma beklentilerimin başlıcalarından.",
+"katki": "Benden istenilen görev ve sorumlulukları yerine getirmekle birlikte birçok sosyal ve akademik alanda katkı sağlamak için elimden geleni yapmaya hazırım.",
+"ilgi_alanlari": "Üniversite Temsilciliği, Topluluk Yönetimi, Araştırma & Raporlama, Proje Yönetimi",
+"yetkinlikler": "Araştırma, İletişim, Sunum, Organizasyon",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": "Daha önce bulunduğum topluluk /derneklere katılımcı olarak devam sağladım",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Denizcilik, Dış Ticaret, Üretim & Operasyon, Uluslararası Ticaret",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Şu an için belli bir isteğim yok.",
+"farklilik": "Öğrenme ,araştırma ve yeni çalışmalara adım atmaya istekliyim.Kendimi geliştirmek için devamlı bir sürecin içerisinde ilerlemekte ve çaba göstermekte aynı zamanda daha sakin ve mantıklı karar verme eğiliminde bir bireyim."
+},
+{
+"kod": "a20",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "İSTANBUL MEDİPOL ÜNİVERSİTESİ",
+"bolum": "Lojistik Yönetimi",
+"kurum": "Ufuk Ticaret (kendi işimiz)",
+"pozisyon": "Satış Elemanı",
+"neden_katilmak": "Lojistik alanındaki akademik bilgimi ve saha tecrübemi sektör profesyonelleriyle paylaşmak, aynı zamanda küresel lojistik dinamikleri ve güncel terimler üzerine vizyonumu geliştirmek istiyorum",
+"nasil_haberdar": "Sektörel araştırmalarım, sosyal medya (LinkedIn) paylaşımları ve akademik çevremdeki tavsiyeler sayesinde haberdar oldum.",
+"beklentiler": "Lojistik ve tedarik zinciri terminolojisinde güncel bir kaynak sunması, sektör içi profesyonel ağı genişletmesi ve yenilikçi lojistik süreçleri hakkında bilgi paylaşımına imkan tanımasıdır.",
+"katki": "Gümrük, ticaret ve saha operasyonlarındaki pratik deneyimim ile akademik altyapımı birleştirerek platform içeriğine nitelikli katkı sunabilir, aktif bilgi paylaşımıyla topluluğun gelişimini destekleyebilirim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, Kurumsal İletişim, Topluluk Yönetimi, Proje Yönetimi, İş Geliştirme",
+"yetkinlikler": "İletişim, Sunum, Pazarlama, Satış, Organizasyon, Proje yönetimi",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": "almadım",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Taşımacılık, Uluslararası Ticaret, Depo & Stok Yönetimi, Üretim & Operasyon, Satın Alma, Gümrük, Dış Ticaret, Denizcilik, Karayolu Taşımacılığı, Sürdürülebilirlik, Lojistik Teknolojileri, E-ticaret Lojistiği",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "İş Geliştirme",
+"proje_fikri": "Şu aşamada önceliğim, bana verilen görevleri eksiksiz yerine getirerek ekibe uyum sağlamaktır. Sürece tam adapte olduktan sonra yeni fikirler sunmayı planlıyorum.",
+"farklilik": "Lojistik alanındaki akademik eğitimimi, bizzat saha operasyonları ve iş geliştirme süreçlerindeki pratik tecrübelerimle destekliyor olmamdır."
+},
+{
+"kod": "a21",
+"statu": "Çalışan / Profesyonel",
+"ogrenim_seviyesi": "Yüksek Lisans",
+"universite": "İSTANBUL ÜNİVERSİTESİ",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "THY destek hizmet a.ş.",
+"pozisyon": "Kargo Memuru",
+"neden_katilmak": "15+ senelik hava kara deniz yolu taşıma tecrübemle değer katabilecegimi düşünüyorum.",
+"nasil_haberdar": "Linkedin üzerinden fikri sahibi oldum.",
+"beklentiler": "Değer katmak fikir paylaşmak, katilimcilardan tecrübelerinden faydalanmak ve platformu ilerletmek",
+"katki": "15 senenin üzerindeki sektör ve akademik tecrübelerimi paylaşmak",
+"ilgi_alanlari": "İçerik Üretimi, Akademik İçerik, Eğitim & Eğitim Organizasyonu, Lojistik & Tedarik Zinciri, Proje Yönetimi, İnsan Kaynakları, İş Geliştirme, İletişim & Halkla İlişkiler, Etkinlik Organizasyonu, Araştırma & Raporlama, Topluluk Yönetimi, Kurumsal İletişim, Sponsorluk & İş Birlikleri",
+"yetkinlikler": "Excel, PowerPoint, Canva, Adobe Photoshop, SQL, Araştırma, Akademik yazım, İçerik yazarlığı, Sunum, Pazarlama, Proje yönetimi, Organizasyon, İletişim",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Üniversite hayatimda reklam ve organizasyon sorumlusuydum.",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Uluslararası Ticaret, Taşımacılık, Depo & Stok Yönetimi, Üretim & Operasyon, Dış Ticaret, Denizcilik, Havacılık, Karayolu Taşımacılığı, Demiryolu, E-ticaret Lojistiği, Lojistik Teknolojileri, Akademik Araştırma, Sürdürülebilirlik",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "İş Geliştirme",
+"proje_fikri": "Ekibe dahil olduktan sonra ihtiyaca göre katkilarim olacaktir.",
+"farklilik": "15 senenin üzerinde hem sektör hemde akademik tecrubem."
+},
+{
+"kod": "a22",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "AKDENİZ ÜNİVERSİTESİ (ANTALYA)",
+"bolum": "Denizcilik İşletmeleri Yönetimi",
+"kurum": "yok",
+"pozisyon": "yok",
+"neden_katilmak": "Denizcilik işletmeleri yönetimi bölümünün lojistiğin deniz taşımacılığı tarafının bir parçası olduğunu düşünmek yadsınamaz. Bana bu konularda bilgi ve sektörel network açısından katkı sağlayacağını düşündüğüm için katılmak istiyorum.",
+"nasil_haberdar": "LINKEDLN",
+"beklentiler": "Lojistik ve denizcilik sektörüne dair güncel bilgi ve içeriklere ulaşabileceğim, sektördeki profesyonellerle iletişim kurabileceğim ve farklı alanlardaki gelişmeleri takip edebileceğim bir platform olmasını bekliyorum. Özellikle mesleki bilgilerimi geliştirecek içerikler, sektör deneyimlerinin paylaşılması, networking ve kariyer fırsatlarının sunulması benim için önemli.",
+"katki": "Denizcilik ve lojistik alanında edindiğim akademik bilgiler ve staj deneyimlerimle topluluğa katkı sağlayabileceğimi düşünüyorum. Özellikle satın alma, tedarik zinciri, liman ve denizcilik operasyonları gibi konularda öğrendiğim bilgileri ve sektörel deneyimlerimi paylaşabilirim. Antalyada sektörü tanıma ve tanıtma açısından da katkı sağlayabilirim. Bunun yanında yeni bilgiler öğrenmeye, farklı bakış açılarını dinlemeye ve aktif olarak içerik üretmeye istekliyim. Topluluk içerisinde hem öğrendiklerimi paylaşarak hem de diğer üyelerden öğrenerek karşılıklı bilgi alışverişine katkı sağlamak isterim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, Üniversite Temsilciliği",
+"yetkinlikler": "İletişim, Araştırma, Organizasyon",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": "üye olarak deniz kültür topluluğu etkinliklerine katıldım.",
+"lojistik_konu_ilgisi": "Denizcilik, Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Uluslararası Ticaret",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "yok",
+"talep_edilen_rol": "Şehir Temsilcisi",
+"proje_fikri": "lojistik ve denizcilik işletmeleri yönetiminin bağlantısı üzerinde durabilirim. lojistiğin deniz sektöründe ben alanımla bağdaştırabiliriz.",
+"farklilik": "Beni diğer adaylardan farklı kılan en önemli özelliğimin, insanlarla bağlantı kurmaya ve bu bağlantıları karşılıklı faydaya dönüştürmeye olan ilgim olduğunu düşünüyorum. Yeni insanlarla tanışmayı, farklı alanlarda araştırma yapmayı ve öğrendiklerimi çevremdeki insanlarla paylaşmayı seviyorum. Sadece kendi gelişimime odaklanmak yerine, edindiğim bilgi ve bağlantıları başkalarına da aktarmaktan çekinmiyorum. İnsanlarla iletişim kurma, merak etme ve öğrendiklerimi paylaşma isteğimin topluluğa da değer katabileceğine inanıyorum."
+},
+{
+"kod": "a23",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "İSTANBUL ÜNİVERSİTESİ",
+"bolum": "Lojistik Yönetimi",
+"kurum": "greenlog intermodal",
+"pozisyon": "stajyer",
+"neden_katilmak": "yapılan iş hem sektöre hem öğrencilere yüksek fayda sağlıyor. bu sektörde yer alan biri olarak bunun bir parçası olmak istiyorum",
+"nasil_haberdar": "linkedin üzerinden paylasımlarınızı takip ediyorum",
+"beklentiler": "sektöre dair sıfırdan baslayan birinin bu platform sayesinde bilgi sahibi olması ve türkiyede büyüyen bi erada gelişime açık network ağı sağlaması",
+"katki": "sosyal medya, organizasyon gibi alanlarda eski deneyimlere istinaden fayda sağlayabileceğimi düsünüyorum",
+"ilgi_alanlari": "Sosyal Medya, Kurumsal İletişim, Etkinlik Organizasyonu, Grafik Tasarım, Proje Yönetimi, İletişim & Halkla İlişkiler, Araştırma & Raporlama",
+"yetkinlikler": "Canva, Figma, Araştırma, İçerik yazarlığı, Sosyal medya yönetimi, İletişim, Organizasyon, Proje yönetimi",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "turmepa deniz temiz derneği - gönüllü i.ü. yedinci sanat sinema - tasarım ekibi üyesi (çeşitli afiş ve sosyal medya post üretimi) zorlu psm - yönlendirme(halkla ilişkiler ve iletişim) alternatif radyo tiyatrosu topluluğu - araştırma ve takvim yönetimi ...",
+"lojistik_konu_ilgisi": "Lojistikte Veri Analitiği, E-ticaret Lojistiği, Tedarik Zinciri Yönetimi, Uluslararası Ticaret, Taşımacılık, Lojistik Yönetimi, Üretim & Operasyon",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "İş Geliştirme",
+"proje_fikri": "ekip ve proje sürecinde alan araştırması ve analizlerine göre faydacı bir proje fikri üzerine çalışırım lakin şuan bi işte çalıstığım için yeterli bir sey yazamadığımı belirtmek isterim",
+"farklilik": "çok yönlü ve iletişime açık biriyimdir. rutinden değil yenilikten beslendiğim için sistem içinde fark yaratacağıma eminim."
+},
+{
+"kod": "a24",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "ÇANAKKALE ONSEKİZ MART ÜNİVERSİTESİ",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "Mardaş Deniz İşletmeciliği",
+"pozisyon": "Gemi/Saha Planlama Stajyer",
+"neden_katilmak": "Kendimi geliştirmek için okuduğum bölümde kulüp işleriyle uğraşıyorum Ar-Ge Komite başkanıyım bunu yapmamdaki en büyük amaç sektöre daha fazla hakim olabilmek kendime network kazandırmak ve bu alanda kendimi daha ileriye taşımak bu ekibe girmek isteme sebebim ve uğraşım da aynı sebeptendir",
+"nasil_haberdar": "Çomü’den sınıf arkadaşım burada temsilcilik yapıyor onun paylaşımları aracılığıyla bilgi sahibi oldum",
+"beklentiler": "Sektörün nasıl işlediğini bizleri mezun olduktan sonra neler beklediğini yapılan çalışmaları ve lojistik gündemini daha yakından takip ederek sektörün nabzını tutmak istiyorum",
+"katki": "Elimden geldiğince daha fazla insana ulaşarak kendi bildiğim bilgileri aktarmayı ve içerik üretme kısmında yaptığım Ar-Ge çalışmalarını burada da göstermeyi ve kattığım fayda kadarından fazlasını alabileceğimi düşünüyorum",
+"ilgi_alanlari": "Kurumsal İletişim, Proje Yönetimi, Lojistik & Tedarik Zinciri",
+"yetkinlikler": "Excel, Proje yönetimi",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Çomü ULK Kulübü Aktif üyelik Çomü ULK Kulübü Ar-Ge Komite Başkanlığı Çomü ULK Kulübü Zirve Organizasyon Sorumlusu Çomü Kariyer ve Keşif Kulübü Etkinlik Sorumlusu",
+"lojistik_konu_ilgisi": "Denizcilik, Havacılık, Gümrük, Dış Ticaret",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Proje Asistanı",
+"proje_fikri": "Lojistik alanında tercih yapıp 1.sınıflar üzerinde tanıtımlar yapmak ve lojistiği onlara anlatmak Şimdiye kadar yaptığım stajı kulüpteki faaliyetleri onlara anlatmak bunun hakkında sunumlar hazırlamak Verilen görevlerde ekibi yönetip yürütülen işin kontrolünü sağlamak",
+"farklilik": "Sorumluluk alabilmem ve liderlik vasfım farkımdır"
+},
+{
+"kod": "a25",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "AYDIN ADNAN MENDERES ÜNİVERSİTESİ",
+"bolum": "Lojistik Yönetimi",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Şehir temsilcisi olmak istiyorum ayrıca profesyoneller ile bir arada olmanın gelecek hedeflerim için çok iyi bir fırsat olacağına inanıyorum.",
+"nasil_haberdar": "LinkedIn üzerinden ve kendi araştırmalarım sonucunda bilgi sahibi oldum.",
+"beklentiler": "Kendimi geliştirirken aynı zamanda network kurup sektörün önde gelen profesyonelleri ile iletişim halinde olmak.",
+"katki": "Araştırmacı kişiliğim ile araştırmalara destek olur. Sorunlara çözümcül yaklaşımım ile sorunları beraber çözebilirim.",
+"ilgi_alanlari": "Üniversite Temsilciliği, Etkinlik Organizasyonu, Araştırma & Raporlama",
+"yetkinlikler": "Excel, Araştırma, İletişim, Sunum",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Öğrenci kulübüne üyeyim ve daha önce gönüllü olarak bir araştırma görevlisi olarak çalıştım.",
+"lojistik_konu_ilgisi": "Tedarik Zinciri Yönetimi, Sürdürülebilirlik, E-ticaret Lojistiği, Lojistik Yönetimi",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Şehir Temsilcisi",
+"proje_fikri": "Lojistikte sürdürülebilirlik konusunda araştırmalar yürütüp firmaların bu konu ile ilgili daha hassas olmasını sağlamak.",
+"farklilik": "Araştırmayı,sürekli öğrenmeyi,kendini geliştirmeyi hayat felsefesi haline getirmiş ve etkili iletişim, risk yönetimi, sunum proje alanlarında çok iyiyim"
+},
+{
+"kod": "a26",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Lisans",
+"universite": "İSTANBUL NİŞANTAŞI ÜNİVERSİTESİ",
+"bolum": "Havacılık Yönetimi",
+"kurum": "Jazeeraairways",
+"pozisyon": "Cagri merkezi",
+"neden_katilmak": "Lojistik ve havacılık operasyonları alanındaki bilgi ve deneyimlerimi geliştirmek, sektördeki profesyonellerle bağlantı kurmak ve güncel lojistik bilgilerini takip etmek için LogisticsGlossary’ye katılmak istiyorum",
+"nasil_haberdar": "Lojistik ve havacılık sektöründeki iş fırsatlarını ve profesyonel platformları araştırırken LogisticsGlossary ile karşılaştım.",
+"beklentiler": "Güncel ve kaliteli lojistik içeriklerine erişmek, sektör profesyonelleriyle network oluşturmak ve kariyerimi lojistik ve havacılık operasyonları alanında geliştirmek.",
+"katki": "Havacılık operasyonları, yolcu hizmetleri ve operasyonel süreçler konusundaki deneyimlerimi paylaşabilir; farklı ülkelerdeki havacılık ve lojistik süreçlerine ilişkin bilgi ve bakış açımı platforma katkı olarak sunabilirim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri",
+"yetkinlikler": "İletişim, İngilizce, Organizasyon, Pazarlama, CapCut, Sosyal medya yönetimi",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": ".",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Üretim & Operasyon, Havacılık",
+"ingilizce_seviyesi": "İleri Düzey (C2)",
+"konusma_seviyesi": "İleri",
+"diger_diller": "Arapca",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Havacılık operasyonları ile lojistik süreçlerini bir araya getiren içerikler hazırlamak isterim. Özellikle havalimanı operasyonları, uçak turnaround süreçleri, yer hizmetleri ve operasyonel verimlilik konularında pratik ve sektörel bilgiler paylaşarak platforma katkı sağlayabilirim.",
+"farklilik": "Havacılık yönetimi ve operasyonları alanında eğitim almış olmamın yanı sıra farklı ülkelerde çalışma ve farklı kültürlerden insanlarla iletişim kurma deneyimim var. Arapça ve İngilizceyi akıcı, Türkçeyi ise çalışma seviyesinde kullanabiliyorum. Analitik düşünme, operasyonel süreçleri hızlı öğrenme ve problem çözme becerilerimin beni diğer adaylardan farklı kıldığına inanıyorum."
+},
+{
+"kod": "a27",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "ONDOKUZ MAYIS ÜNİVERSİTESİ (SAMSUN)",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Lojistik ve tedarik zinciri sektöründe bilgili insanlarla tanışmak network kurmak ve insanların tecrebülerini bilgilerini kendime katıp ilerlemek istiyorum.",
+"nasil_haberdar": "Müslüm beyle ekleştik ordan görüyorum.",
+"beklentiler": "Sosyalleşmek,sorumluluk alıp kendimi geliştirmek",
+"katki": "Grup için Samsun’da işi olanlara yardımcı olabilirim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, Proje Yönetimi, Veri Analizi, Topluluk Yönetimi, Üniversite Temsilciliği",
+"yetkinlikler": "Excel, Veri analizi, İngilizce, Yapay zekâ araçları, Proje yönetimi",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": "-",
+"lojistik_konu_ilgisi": "Tedarik Zinciri Yönetimi, Lojistik Yönetimi, Lojistikte Veri Analitiği, Lojistik Teknolojileri, Denizcilik, Havacılık",
+"ingilizce_seviyesi": "Orta Üstü (B2)",
+"konusma_seviyesi": "İyi",
+"diger_diller": "",
+"talep_edilen_rol": "Şehir Temsilcisi",
+"proje_fikri": "Ekibimizin Samsun’daki insanlarla toplanıp organizasyonlar yapabilirim.Tubitak projeleri geliştirebilirim.",
+"farklilik": "Başarı,statüye aç bir insanım.Okula geç kaldığımdan ötürü pişmanlıklarım beni daha tecrübeli daha sağlam adımlarla okumaya itiyor."
+},
+{
+"kod": "a28",
+"statu": "Çalışan / Profesyonel",
+"ogrenim_seviyesi": "Lisans",
+"universite": "BANDIRMA ONYEDİ EYLÜL ÜNİVERSİTESİ (BALIKESİR)",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "EgeYurt Lojistik",
+"pozisyon": "İzmir Bölge Müdürü",
+"neden_katilmak": "Yeni bağlantılar, yeni projeler",
+"nasil_haberdar": "Linkedin",
+"beklentiler": "Kendimi geliştirmek",
+"katki": "Yeni bağlantılar, yeni projeler",
+"ilgi_alanlari": "Topluluk Yönetimi, Lojistik & Tedarik Zinciri, Proje Yönetimi, Etkinlik Organizasyonu, Kurumsal İletişim",
+"yetkinlikler": "Excel, PowerPoint, Canva, Araştırma, Proje yönetimi, Organizasyon, Sunum, Sosyal medya yönetimi",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Kurucu başkanlık yaptığım kulüpler ve Katılmıs oldugum STK var",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Uluslararası Ticaret, Dış Ticaret, Karayolu Taşımacılığı, Lojistikte Veri Analitiği, Lojistik Teknolojileri, Denizcilik",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": ".",
+"farklilik": "."
+},
+{
+"kod": "a29",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Lisans",
+"universite": "BURSA TEKNİK ÜNİVERSİTESİ",
+"bolum": "Endüstri Mühendisliği",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Endüstri Mühendisliği mezunu olarak lojistik ve tedarik zinciri alanında kendimi geliştirmek, sektörü daha yakından tanımak ve farklı bakış açıları kazanmak istiyorum. LogisticsGlossary’nin sektörden insanlarla bir araya gelme, bilgi paylaşımı ve yeni şeyler öğrenme açısından bana güzel bir ortam sağlayacağını düşünüyorum. Özellikle veri analitiği ve süreç iyileştirme gibi alanlardaki ilgimi lojistik sektörüyle birleştirerek kendime yeni bir yön çizmek istiyorum.",
+"nasil_haberdar": "LinkedIn üzerinden gördüm ve LogisticsGlossary’nin faaliyetleri ilgimi çekti. Bunun üzerine biraz inceleyerek program hakkında bilgi sahibi oldum.",
+"beklentiler": "Platform sayesinde lojistik ve tedarik zinciri sektörünü daha yakından tanımayı, sektördeki güncel gelişmeleri ve farklı bakış açılarını öğrenmeyi bekliyorum. Aynı zamanda sektörden insanlarla tanışarak yeni bağlantılar kurmak ve kendimi bu alanda geliştirmek istiyorum.",
+"katki": "Endüstri Mühendisliği alanındaki eğitimim ve veri analitiği, süreç iyileştirme ve problem çözme konularındaki ilgimle platforma farklı bir bakış açısı katabileceğimi düşünüyorum. Aynı zamanda öğrendiklerimi paylaşarak, aktif katılım göstererek ve farklı fikirlerle katkı sağlayabilirim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, Veri Analizi, Proje Yönetimi, İş Geliştirme, Eğitim & Eğitim Organizasyonu, İnsan Kaynakları, Yapay Zeka, Diğer",
+"yetkinlikler": "Excel, PowerPoint, Canva, Figma, Python, SQL, Yapay zekâ araçları, Veri analizi, Araştırma, Sunum, İletişim, İngilizce",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Üniversite hayatım boyunca çeşitli öğrenci kulüplerinin düzenlediği etkinliklere katılım sağladım. Özellikle kamp ve sosyal etkinliklerde aktif olarak yer aldım. Bu etkinlikler sayesinde farklı insanlarla tanışma, ekip içinde iletişim kurma ve yeni deneyimler kazanma fırsatı buldum.",
+"lojistik_konu_ilgisi": "Depo & Stok Yönetimi, Satın Alma, Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Lojistikte Veri Analitiği, Sürdürülebilirlik, Taşımacılık",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Lojistik sektöründeki güncel gelişmeleri ve sektörel verileri daha anlaşılır hale getiren küçük bir veri analitiği çalışması yapmak isterim. Örneğin taşımacılık, maliyetler veya teslimat performansı gibi konulardaki veriler üzerinden basit analizler ve görselleştirmeler hazırlanabilir. Böylece hem ekip içinde faydalı bir çalışma ortaya koyabileceğimi hem de kendi bilgilerimi sektöre uyarlayabileceğimi düşünüyorum.",
+"farklilik": "Beni farklı kılan en önemli özelliğin, Endüstri Mühendisliği bakış açısını veri analitiğine olan ilgimle birleştirmem olduğunu düşünüyorum. Yeni şeyler öğrenmeye ve öğrendiklerimi uygulamaya istekliyim. Aynı zamanda ekip çalışmalarına uyum sağlayan, sorumluluk almaktan çekinmeyen ve farklı alanları deneyimlemeye açık biriyim."
+},
+{
+"kod": "a30",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Ön Lisans",
+"universite": "HATAY MUSTAFA KEMAL ÜNİVERSİTESİ",
+"bolum": "Lojistik Yönetimi",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Lojistik sektöründe eğitim aldım ve kendimi geliştirmek adına bir adım atmak için katılmak istiyorum.",
+"nasil_haberdar": "Uygulamada önüme çıktı",
+"beklentiler": "Lojistik sektörünün vazgeçilmezi olmak ve platformun bana köprü olmasını sağlamak",
+"katki": "Şuanlık gerçeği söylemek gerekirse sadece öğrenmek ve sonrasında daha aktif rol oynamak istiyorum",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri",
+"yetkinlikler": "Excel, PowerPoint, İletişim, Organizasyon",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": "Hayır olmadı",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Uluslararası Ticaret, Taşımacılık, Depo & Stok Yönetimi, Karayolu Taşımacılığı, Lojistik Teknolojileri, Sürdürülebilirlik, Dış Ticaret, Demiryolu, Gümrük, Üretim & Operasyon, Satın Alma, Denizcilik",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Şuanlık sadece eğitim",
+"farklilik": "Öğrenmeye açık bir genç"
+},
+{
+"kod": "a31",
+"statu": "Çalışan / Profesyonel",
+"ogrenim_seviyesi": "Yüksek Lisans",
+"universite": "BARTIN ÜNİVERSİTESİ",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "gisticsGlossary’ye katılmak istememin temel nedeni, lojistik alanındaki bilgi ve deneyimlerimi geliştirmek, sektördeki güncel gelişmeleri yakından takip etmek ve farklı bakış açılarına sahip profesyonellerle etkileşim kurmaktır. Uluslararası Ticaret ve Lojistik mezunu olarak edindiğim akademik bilgileri, saha ve lojistik operasyon deneyimlerimle birleştirerek sektöre daha fazla katkı sağlamayı hedefliyorum. LogisticsGlossary’nin bilgi paylaşımı ve mesleki gelişim açısından bana yeni fırsatlar sunacağına inanıyor, aynı zamanda kendi deneyimlerimi paylaşarak topluluğa katkı sağlamak istiyorum.",
+"nasil_haberdar": "Linkedln",
+"beklentiler": "Platformdan beklentim; lojistik sektöründeki güncel gelişmeleri ve uygulamaları takip edebileceğim, alanında deneyimli kişilerden öğrenebileceğim ve mesleki çevremi geliştirebileceğim bir ortam sunmasıdır. Aynı zamanda edindiğim bilgi ve deneyimleri paylaşarak platforma katkı sağlamak ve kariyer gelişimime yön verecek yeni fırsatlar elde etmek istiyorum.",
+"katki": "Platforma; lojistik ve operasyon alanındaki eğitimim, saha ve iş deneyimlerim doğrultusunda edindiğim bilgi ve tecrübeleri aktararak katkı sağlayabileceğimi düşünüyorum. Farklı çalışma alanlarında edindiğim deneyimleri paylaşarak sektörel bilgi alışverişine katkıda bulunmak, yeni fikirler üretmek ve platformdaki diğer üyelerle birlikte öğrenerek gelişmek istiyorum.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri",
+"yetkinlikler": "Excel, PowerPoint, Canva, Akademik yazım, Satış, Pazarlama, İletişim, Sunum, Araştırma",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": "Akademik Makale yazdım",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Depo & Stok Yönetimi, Diğer",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "Almanca başlangıç",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "LogisticsGlossary ekibine katılmam durumunda, özellikle lojistik sektörüne yeni adım atan öğrenciler ve genç profesyoneller için faydalı olacak içerikler hazırlamak isterim. Sektörde farklı pozisyonlarda çalışan kişilerin deneyimlerini paylaşabileceği kısa röportajlar, kariyer yolculukları ve lojistiğin günlük operasyonlarını anlatan içeriklerden oluşan bir çalışma yapılabileceğini düşünüyorum. Böylece hem sektöre dair farkındalığı artırabilir hem de gençlerin kariyer seçimlerinde daha bilinçli karar vermelerine katkı sağlayabilirim.",
+"farklilik": "Beni diğer adaylardan ayıran en önemli özelliğin, lojistik alanındaki akademik eğitimimi farklı sektörlerde edindiğim saha, satış ve operasyon deneyimleriyle birleştirmiş olmam olduğunu düşünüyorum. Farklı çalışma ortamlarına hızlı uyum sağlayabilen, iletişimi güçlü ve öğrenmeye açık biriyim. Sadece bilgi edinmek değil, öğrendiklerimi paylaşarak çevreme ve bulunduğum ekibe değer katmak benim için önemli. Bu nedenle LogisticsGlossary ekibinde hem kendimi geliştirebileceğime hem de farklı deneyimlerimle ekibe katkı sağlayabileceğime inanıyorum."
+},
+{
+"kod": "a32",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "AKDENİZ ÜNİVERSİTESİ (ANTALYA)",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "Atlas lojistik kulübü",
+"pozisyon": "Kurumsal ilişkiler departman başkanı",
+"neden_katilmak": "Lojistik alanında kendimi geliştirmek ve sektörel bilgi birikimimi artırmak için katılmak istiyorum.",
+"nasil_haberdar": "Sosyal medya ve çevremdeki lojistik alanındaki paylaşımlar sayesinde bilgi sahibi oldum.",
+"beklentiler": "Sektörü yakından tanımak, yeni bilgiler öğrenmek ve alanında yetkin insanlarla bağlantı kurmak.",
+"katki": "LogisticsGlossary’nin eğitimlerini ve projelerini takip ederek lojistik alanındaki bilgilerimi geliştirmek istiyorum. Öğrenmeye ve araştırmaya olan ilgimle edindiğim bilgileri platforma katkı sağlayacak şekilde paylaşabileceğimi düşünüyorum. Lojistikte kendimi geliştirmem gereken daha çok yol olduğunun farkındayım. Amacım sürekli öğrenerek ve üreterek bu sektörde iyi bir profesyonel olmak.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, Proje Yönetimi, Sponsorluk & İş Birlikleri, Kurumsal İletişim, Etkinlik Organizasyonu, Üniversite Temsilciliği, Araştırma & Raporlama",
+"yetkinlikler": "Sunum, İletişim, Araştırma",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Atlas lojistik kulübü/ kariyer günleri etkinliği/ Kurumsal departman başkanı/ konuşmacı ve sponsorluk bulma",
+"lojistik_konu_ilgisi": "Uluslararası Ticaret, Dış Ticaret, Lojistik Teknolojileri, Denizcilik, Gümrük, Tedarik Zinciri Yönetimi",
+"ingilizce_seviyesi": "Başlangıç (A1)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "Etkinlik Ekibi",
+"proje_fikri": "Atlas Lojistik Kulübü ile Akdeniz Üniversitesi’nde düzenlediğimiz etkinlik ve eğitim çalışmalarını LogisticsGlossary ile birleştirmek isterim. Öğrencilerin sektörü yakından tanıyabileceği eğitim, söyleşi ve networking etkinlikleri düzenleyerek hem platforma hem de öğrencilere katkı sağlayabileceğimi düşünüyorum.",
+"farklilik": "İletişim ve organizasyon konusunda aktifim. Sadece öğrenmek değil öğrendiklerimi faydaya dönüştürmek istiyorum."
+},
+{
+"kod": "a33",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "PAMUKKALE ÜNİVERSİTESİ (DENİZLİ)",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Kendimi bu alanda geliştirmek iatediğim için katılmak istiyorum",
+"nasil_haberdar": "Linkedin üzerinden gördüm",
+"beklentiler": "Lojistik alanında kendimimi geliştirmeme yardımcı olması",
+"katki": "Üniversitemde öğrendiğim teorik bilgimi pratiğe dökebilirim",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri",
+"yetkinlikler": "Excel, PowerPoint, Diğer",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": "Microsoft excel temelleri sertifikası Dış ticaret uzmanlığı sertifikası Bilgisayar işletmenliği sertifikası",
+"lojistik_konu_ilgisi": "Uluslararası Ticaret, Lojistik Yönetimi, Taşımacılık, Tedarik Zinciri Yönetimi, Depo & Stok Yönetimi, Gümrük, Dış Ticaret",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "Gönüllü Destek",
+"proje_fikri": "Yok",
+"farklilik": "Çalışkanım azimliyim öğrenmeye istekliyim"
+},
+{
+"kod": "a34",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "BANDIRMA ONYEDİ EYLÜL ÜNİVERSİTESİ (BALIKESİR)",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "Yok",
+"pozisyon": "Yok",
+"neden_katilmak": "Son sınıf öğrencisi olarak mezuniyetime kısa bir süre kala kendimi hem akademik hem de sektörel anlamda geliştirmek ve yeni deneyimler kazanmak istiyorum. LogisticsGlossary’nin lojistik sektörüne dair farklı bakış açıları kazandıracağını ve alanımda kendime yeni şeyler katmamı sağlayacağını düşünüyorum.",
+"nasil_haberdar": "LogisticsGlossary hakkında LinkedIn üzerinden yapılan paylaşımlar ve içerikler sayesinde bilgi sahibi oldum.",
+"beklentiler": "Platformdan beklentim, lojistik sektörüne dair güncel ve farklı bilgiler edinmek, sektördeki profesyonellerin deneyimlerinden faydalanmak ve mezuniyet öncesinde kendimi mesleki anlamda geliştirebileceğim yeni bakış açıları kazanmaktır. Aynı zamanda sektörle bağlantılar kurarak kariyer yolculuğuma katkı sağlamasını bekliyorum.",
+"katki": "Üniversitemde aktif olarak görev aldığım Lojistik Topluluğu’nda sosyal medya koordinatörlüğü yapıyorum. Bu görevim sayesinde içerik üretimi, sosyal medya yönetimi, ekip çalışması, iletişim ve organizasyon konularında deneyim kazandım. Aynı zamanda etkinliklerin duyurulması ve sektör profesyonelleriyle iletişim kurulması gibi süreçlerde aktif rol alıyorum. Bu deneyimlerimi LogisticsGlossary’ye de aktararak içerik üretimi, iletişim ve ekip çalışmalarına katkı sağlayabileceğimi düşünüyorum",
+"ilgi_alanlari": "İçerik Üretimi, Video / Reels, Sosyal Medya, Proje Yönetimi",
+"yetkinlikler": "CapCut, Sosyal medya yönetimi, Fotoğraf / Video, Excel",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "BANÜ Lojistik Topluluğu – 3 yıldır aktif üye. 2 yıl boyunca İçerik Üreticisi, son 1 yıldır ise Sosyal Medya Koordinatörü olarak görev alıyorum. Sosyal medya içeriklerinin hazırlanması ve yönetimi, etkinliklerin duyurulması, ekip çalışması ve organizasyon süreçlerinde aktif sorumluluk üstleniyorum.",
+"lojistik_konu_ilgisi": "E-ticaret Lojistiği, Gümrük, Uluslararası Ticaret, Lojistik Yönetimi, Dış Ticaret, Sürdürülebilirlik",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "Yok",
+"talep_edilen_rol": "İçerik Ekibi",
+"proje_fikri": "LogisticsGlossary’nin daha fazla öğrenciye ve yeni mezuna ulaşmasını sağlamak amacıyla sosyal medya odaklı içerikler üretmek isterim. Özellikle kısa ve bilgilendirici Reels videoları, lojistik terimlerini günlük ve anlaşılır bir dille anlatan içerikler ve öğrencilerin ilgisini çekecek interaktif paylaşımlar hazırlayarak platformun bilinirliğini artırmaya katkı sağlayabileceğimi düşünüyorum.",
+"farklilik": "Üç yıldır BANÜ Lojistik Topluluğu içerisinde aktif olarak görev alıyor olmamın bana öğrenci kitlesini ve onların ilgi alanlarını yakından tanıma konusunda önemli bir deneyim kazandırdığını düşünüyorum. Özellikle sosyal medya ve içerik üretimi alanında edindiğim deneyim sayesinde, lojistik alanındaki bilgileri öğrencilerin ilgisini çekecek şekilde aktarabileceğime ve ekip içerisinde aktif sorumluluk alabileceğime inanıyorum."
+},
+{
+"kod": "a35",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "AYDIN ADNAN MENDERES ÜNİVERSİTESİ",
+"bolum": "Lojistik Yönetimi",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "LogisticsGlossary’ye katılmak istememin en önemli nedeni, lojistik alanında edindiğim akademik bilgileri sektör deneyimimle birleştirerek kendimi daha fazla geliştirmek ve bu alanda üretken bir ekibin parçası olmak istemem. Lojistik Yönetimi öğrencisi olarak sektörü yalnızca dersler üzerinden değil, iş deneyimlerim ve farklı projeler aracılığıyla da tanımaya çalışıyorum. LogisticsGlossary’nin öğrencileri ve sektör profesyonellerini bir araya getiren yapısının bana yeni bakış açıları kazandıracağına ve güçlü bir network oluşturmama katkı sağlayacağına inanıyorum. Aynı zamanda öğrendiklerimi paylaşarak içerik, proje ve etkinlik süreçlerine katkı sunmak ve lojistik ekosisteminin gelişiminde aktif rol almak istiyorum.",
+"nasil_haberdar": "LogisticsGlossary’yi sosyal medya ve lojistik alanındaki paylaşımlar aracılığıyla keşfettim. Öğrencileri, akademisyenleri ve sektör profesyonellerini bir araya getiren yapısı dikkatimi çekti. Özellikle lojistik alanında kendimi geliştirirken güncel gelişmeleri takip etmek ve sektörün farklı alanlarından insanlarla bağlantı kurmak istediğim için LogisticsGlossary hakkında daha fazla bilgi edinmeye başladım.",
+"beklentiler": "Platformdan öncelikli beklentim, lojistik ve tedarik zinciri alanındaki bilgi ve deneyimlerimi geliştirebileceğim, sektör profesyonelleri ve farklı üniversitelerden öğrencilerle iletişim kurabileceğim bir ortam sunması. Bunun yanında etkinlik, proje ve içerik üretim süreçlerinde aktif sorumluluk alarak hem yeni beceriler kazanmak hem de mevcut deneyimlerimi geliştirmek istiyorum. Uzun vadede ise güçlü bir network oluşturarak lojistik sektörünü daha yakından tanımayı ve platforma kendi katkımı sunmayı hedefliyorum.",
+"katki": "LogisticsGlossary’ye öncelikle lojistik alanındaki akademik bilgilerimi ve sektörde edindiğim deneyimleri aktarabileceğimi düşünüyorum. Bunun yanında içerik üretimi, sosyal medya ve iletişim alanındaki becerilerimle platformun daha fazla öğrenciye ulaşmasına katkı sağlayabilirim. Ekip çalışmalarında sorumluluk almaktan ve yeni fikirler üretmekten keyif alıyorum. Öğrenirken aynı zamanda üreten, aktif rol alan ve ekibin gelişimine katkı sağlayan bir ekip arkadaşı olmak istiyorum.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, Araştırma & Raporlama, İnsan Kaynakları, Kurumsal İletişim, İletişim & Halkla İlişkiler",
+"yetkinlikler": "PowerPoint, Excel, Canva, CapCut, Yapay zekâ araçları, Sunum, İletişim, Organizasyon, Proje yönetimi, Pazarlama, Araştırma",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "T3 Vakfında Proje danışmanlığı yapıyorum. Okul topluluklarında etkinliklerde görev aldım. TÜBİTAK'ta lise ve üniversite zamanında proje çalışmaları yaptım.",
+"lojistik_konu_ilgisi": "Havacılık, Lojistik Yönetimi, Denizcilik, Gümrük, Satın Alma, Uluslararası Ticaret, Yapay Zeka, Lojistik Teknolojileri, E-ticaret Lojistiği",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "Almanca",
+"talep_edilen_rol": "Proje Asistanı",
+"proje_fikri": "LogisticsGlossary ekibine katılmam durumunda, öğrenciler ile sektör profesyonellerini daha fazla bir araya getirecek bir proje geliştirmek isterim. Örneğin farklı lojistik alanlarında çalışan profesyonellerin kariyer yolculuklarını, sektörde karşılaştıkları sorunları ve öğrencilere önerilerini paylaşabilecekleri kısa söyleşiler veya çevrim içi buluşmalar düzenlenebilir. Bunun yanında bu içerikleri sosyal medya ve dijital platformlarda paylaşarak daha fazla öğrencinin lojistik sektörünü yakından tanımasına katkı sağlanabilir. Böyle bir projenin hem öğrenciler için gerçek sektör deneyimine ulaşma fırsatı sunacağını hem de LogisticsGlossary’nin sektördeki görünürlüğünü ve etkileşimini artıracağını düşünüyorum.",
+"farklilik": "Beni diğer adaylardan farklı kılan en önemli özelliğin, lojistik alanındaki akademik eğitimimi sektör deneyimim ve farklı projelerde edindiğim tecrübelerle birlikte geliştirmeye çalışmam olduğunu düşünüyorum. Öğrenmekle yetinmeyip öğrendiklerimi uygulamaya ve bulunduğum ekibe katkı sağlamaya önem veriyorum. Farklı insanlarla iletişim kurmaya, yeni fikirler üretmeye ve sorumluluk almaya açık biriyim. LogisticsGlossary’de de yalnızca verilen görevleri yerine getiren değil, sürece fikirleriyle katkı sağlayan ve kendini geliştirmeye devam eden bir ekip arkadaşı olmak istiyorum."
+},
+{
+"kod": "a36",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "DOKUZ EYLÜL ÜNİVERSİTESİ (İZMİR)",
+"bolum": "İşletme",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Network’ün gücüne inanıyorum, bunun her zaman kariyer hayatıma olumlu etkisini gördüm. Üniversitemin 2. ve 3. sınıfında etkinlikler-organizasyonlar koşturmacası derken derslerime odaklanamadım ama sonrasında odağımı sadece derslerime vermek zorunda kaldım ama artık bunun eksikliğini hissediyorum ve kariyer hayatımda ilerlemek istediğim sektörsem bir topluluk görünce ben de bunun içinde olmalıyım dedim.",
+"nasil_haberdar": "Linkedln’de gezinirken rastladım ve sonrasında bu platform üzerinden araştırıp başvurmayı düşündüm.",
+"beklentiler": "Network, iletişim becerilerimi geliştirmek. Lojistik sektöründe daha fazla bilgi sahibi olmak istiyorum",
+"katki": "Takım çalışması konularında kendime güveniyorum. Ekip olarak iletişimde, organizasyon sürecinde elimden geleni yapacağıma inanıyorum",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, İletişim & Halkla İlişkiler, Araştırma & Raporlama",
+"yetkinlikler": "Excel, Organizasyon, İletişim",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Tedx İzmir organizasyon ekip üyesi Pi Gençlik Derneği organizasyon ekip üyesi",
+"lojistik_konu_ilgisi": "Tedarik Zinciri Yönetimi, Dış Ticaret, Uluslararası Ticaret, Lojistik Yönetimi",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Gönüllü Destek",
+"proje_fikri": "Şimdilik yok",
+"farklilik": "Sadece kendimi geliştirmek istiyorum herkes gibi farklı bir özelliğim yok sanırım"
+},
+{
+"kod": "a37",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Lisans",
+"universite": "ALTINBAŞ ÜNİVERSİTESİ (İSTANBUL)",
+"bolum": "Lojistik Yönetimi",
+"kurum": "Oksid Bilişim & İncehesap",
+"pozisyon": "Lojistik Operasyon Planlama ve Operasyonel Mükemmellik Uzman Yardımcısı",
+"neden_katilmak": "Lojistik sektöründeki güncel gelişmeleri ve farklı uzmanlık alanlarını daha yakından tanımak, sektörde deneyimli profesyonellerin bilgi ve tecrübelerinden faydalanmak için katılmak istiyorum. Özellikle hava kargo lojistiği hakkında sektörel bakış açımı geliştirmeyi ve kariyerimde kullanabileceğim yeni bilgiler edinmeyi hedefliyorum.",
+"nasil_haberdar": "LinkedIn üzerinden LogisticsGlossary'yi gördüm. Organizasyonun çalışma ve etkinlik formatı ile paylaşılan içerikler ilgimi çekti ve bu nedenle daha yakından takip etmek ve etkinliklerine katılmak istedim.",
+"beklentiler": "Lojistik sektöründeki güncel gelişmeleri ve farklı alanlardaki uygulamaları öğrenmek, sektörde deneyimli kişilerden bilgi ve tecrübe edinmek ve farklı profesyonellerle iletişim kurarak networkümü geliştirmek. Ayrıca kariyer gelişimime katkı sağlayacak yeni bakış açıları kazanmayı bekliyorum.",
+"katki": "Lojistik alanındaki eğitimim ve iş deneyimlerim doğrultusunda edindiğim bilgi ve deneyimleri paylaşarak platforma katkı sağlayabileceğimi düşünüyorum. Aynı zamanda farklı bakış açılarına açık, öğrenmeye ve aktif katılıma istekli biri olarak etkinliklerde fikir alışverişine katkıda bulunabilir ve platformun gelişimine destek olabilirim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, Araştırma & Raporlama, Proje Yönetimi",
+"yetkinlikler": "Excel, PowerPoint, Araştırma, Proje yönetimi, İngilizce, Organizasyon, Fotoğraf / Video",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Altınbaş Üniversitesi Uluslararası Ticaret ve Lojistik Kulübü – Yönetim Kurulu Üyesi (2023–2025): Lojistik ve dış ticaret alanlarında düzenlenen etkinliklerin planlama ve organizasyon süreçlerinde görev aldım. Sektör profesyonelleri ve konuşmacılarla iletişim, etkinlik koordinasyonu, duyuru süreçleri ve ekip çalışmalarına katkı sağladım.",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Dış Ticaret, E-ticaret Lojistiği, Depo & Stok Yönetimi, Uluslararası Ticaret, Yapay Zeka, Lojistik Teknolojileri, Lojistikte Veri Analitiği, Tedarik Zinciri Yönetimi",
+"ingilizce_seviyesi": "Orta Üstü (B2)",
+"konusma_seviyesi": "İyi",
+"diger_diller": "Almanca (Temel Seviye)",
+"talep_edilen_rol": "Proje Asistanı",
+"proje_fikri": "Lojistik sektöründeki farklı alanları ve güncel gelişmeleri ele alan kısa araştırma ve içerik serileri hazırlanmasına katkı sağlamak isterim. Özellikle sektörde çalışan profesyonellerin deneyimlerinden yararlanarak gençlerin kariyer yolculuğuna ışık tutacak içerikler ve lojistikte kullanılan yeni teknolojiler, sürdürülebilirlik ve operasyonel gelişmeler üzerine araştırmalar yapılabileceğini düşünüyorum.",
+"farklilik": "Lojistik alanına yalnızca akademik açıdan değil, iş ve öğrenci kulübü deneyimlerim üzerinden de farklı yönleriyle yaklaşmamı diğer adaylardan farklı kılan bir özellik olarak görüyorum. Öğrenmeye ve araştırmaya olan ilgimin yanı sıra, ekip çalışmasına ve aktif sorumluluk almaya istekliyim. Edindiğim bilgileri uygulamaya ve farklı bakış açılarını bir araya getirerek somut katkılar sunmaya önem veriyorum."
+},
+{
+"kod": "a38",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Lisans",
+"universite": "SİVAS CUMHURİYET ÜNİVERSİTESİ",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "Emay panel",
+"pozisyon": "İthalat ihracat uzman yardımcısı",
+"neden_katilmak": "Kendimi geliştirmek, lojistik alanında yeni bilgiler öğrenmek ve farklı deneyimler kazanmak istiyorum. Aynı zamanda sektörden insanlarla iletişim kurarak kendime yeni bir çevre oluşturmayı ve öğrendiklerimi paylaşmayı hedefliyorum.",
+"nasil_haberdar": "LinkedIn'de gezinirken karşıma çıktı ve platformu inceleyerek bilgi sahibi oldum.",
+"beklentiler": "Lojistik ve dış ticaret alanında kendimi geliştirebileceğim bilgiler edinmek, sektörü daha yakından tanımak ve farklı insanlarla iletişim kurarak yeni deneyimler kazanmak.",
+"katki": "Uluslararası Ticaret ve Lojistik alanındaki eğitimim ve ihracat alanındaki deneyimlerimle platforma farklı bakış açıları kazandırabileceğimi düşünüyorum. Öğrendiklerimi ve deneyimlerimi paylaşarak diğer katılımcılara katkı sağlamak, aynı zamanda ekip çalışmalarında aktif rol almak isterim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, Diğer",
+"yetkinlikler": "Excel, PowerPoint, Canva, Araştırma, Pazarlama, Satış, Diğer, İngilizce, İletişim, Organizasyon, Sunum",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": "Görev almadım. Utlk kulübünde önce üye sonra başkan yardımcısı olarak görev aldım.",
+"lojistik_konu_ilgisi": "Uluslararası Ticaret, Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Taşımacılık, Depo & Stok Yönetimi, Dış Ticaret, E-ticaret Lojistiği, Lojistik Teknolojileri, Karayolu Taşımacılığı, Akademik Araştırma, Lojistikte Veri Analitiği, Üretim & Operasyon, Gümrük, Demiryolu, Denizcilik, Havacılık, Satın Alma, Sürdürülebilirlik, Diğer",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "İyi",
+"diger_diller": "Yok",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Lojistik ve dış ticaret alanında öğrencilerin ve sektöre yeni başlayanların faydalanabileceği, güncel sektör bilgilerini ve gerçek iş hayatından örnekleri bir araya getiren içerikler hazırlamak isterim. Özellikle ihracat süreçleri, lojistik operasyonlar ve sektörde kullanılan terimler hakkında anlaşılır içerikler oluşturarak platforma katkı sağlamayı hedefliyorum.",
+"farklilik": "Öğrenmeye ve kendimi geliştirmeye olan isteğim, araştırmacı yapım ve öğrendiklerimi paylaşmayı sevmem beni farklı kılan özelliklerim arasında. Uluslararası Ticaret ve Lojistik alanındaki eğitimimin yanı sıra ihracat alanında edindiğim iş deneyimini de platforma aktarabileceğimi düşünüyorum. Yeni şeyler öğrenirken aynı zamanda öğrendiklerimi çevremdekilerle paylaşmaya ve ekip çalışmalarına katkı sağlamaya önem veriyorum."
+},
+{
+"kod": "a39",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "BALIKESİR ÜNİVERSİTESİ",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "Çelebi Bandırma Uluslararası Limanı A. Ş",
+"pozisyon": "Stajyer",
+"neden_katilmak": "Kendini geliştirmek ve ileride çalışacağım yere değer katmak",
+"nasil_haberdar": "LinkedIn'e üzerinden",
+"beklentiler": "Beni geliştirmesi ve potansiyelimi ortaya çıkarması",
+"katki": "Aktif bir birey olarak hem LogisticisGlossary ye hem de kendi kariyerime fayda sağlayacağıma inanıyorum",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, İş Geliştirme, İletişim & Halkla İlişkiler, Araştırma & Raporlama, İnsan Kaynakları, Yapay Zeka, Proje Yönetimi, Veri Analizi",
+"yetkinlikler": "Canva, PowerPoint, Sunum",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Okulun lojistik kulübüne üyelik",
+"lojistik_konu_ilgisi": "Tedarik Zinciri Yönetimi, Lojistik Yönetimi, Uluslararası Ticaret, Depo & Stok Yönetimi, Taşımacılık, Denizcilik, Lojistikte Veri Analitiği, Gümrük, Üretim & Operasyon, E-ticaret Lojistiği, Sürdürülebilirlik, Lojistik Teknolojileri, Dış Ticaret",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "Yok",
+"talep_edilen_rol": "Araştırma Ekibi",
+"proje_fikri": "Günümüz çağına Uygun lojistik operasyonlarını geliştirmek",
+"farklilik": "İletişime açık ve ekip ruhuna uyan bir birey olmam"
+},
+{
+"kod": "a40",
+"statu": "Çalışan / Profesyonel",
+"ogrenim_seviyesi": "Lisans",
+"universite": "BALIKESİR ÜNİVERSİTESİ",
+"bolum": "Bilgisayar Mühendisliği",
+"kurum": "DB SCHENKER ARKAS",
+"pozisyon": "Logistics Specialist",
+"neden_katilmak": "Lojistiği sadece basit bir operasyon sadece inbound ve outbound süreci olarak görmüyorum. Bu nedenle sektörde daha vizyoner bir konumda olabilmek için ve ufkumu genişletmek için bu oluşumun bana katkı sağlayacağını düşünüyorum. Bu nedenle katılmak istiyorum.",
+"nasil_haberdar": "LinkedIn üzerinden keşfettim.",
+"beklentiler": "Farklı jenerasyonlarin bir araya geldigi bu oluşumda farklı vizyonlara sahip insanlarla tanışmak bu doğrultuda iş ağımdaki insan sayısını artırmak. Bunun bana çok fazla şey katacağını düşünüyorum. Bu konuda beklentimde oldukça yüksek.",
+"katki": "Çalıştığım kurumda sürekli geliştirme projeleri ilgi odağım olmuştur. Bu oluşumda lojistik sektöründe özellikle bu konudaki çalışmalar yapmak istiyorum. Özellikle sektörde yapay zeka kullanımıni yaygınlaştırmanin önemi konusunda çalışmalarda bulunmayı beklerim.",
+"ilgi_alanlari": "Eğitim & Eğitim Organizasyonu, Araştırma & Raporlama, Etkinlik Organizasyonu, Veri Analizi, Yapay Zeka, Teknoloji / Yazılım",
+"yetkinlikler": "Excel, Yapay zekâ araçları, Veri analizi",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": "Öncelikle aşağıdaki gibi bir metin yazmamdaki maksat şudur. Normalde buraya tek tek profilimdeki bilgileri kopyalabilirim ama bunu yapmak bana mantıklı gelmiyor. Tıpkı lojistik sektöründe bazı işler için eski şeylerin devam ettirilmesi gibi. Başka bir şekilde yapmak var iken daha kolay erişilebilir bir yöntem var iken buraya eski yöntemle yazmak mantıklı gelmiyor. LinkedIn profilimde çalıştığım kurumda aldığım görev ve sorumluluklar bulunuyor.Yaptigim projelerde aynı sekilde bulunmaktadır.",
+"lojistik_konu_ilgisi": "Depo & Stok Yönetimi, Yapay Zeka, Lojistikte Veri Analitiği",
+"ingilizce_seviyesi": "Başlangıç (A1)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Lojistik sektöründe yapay zekanın kullanımı konusunda projelerde görev almak.",
+"farklilik": "Dürüst olmak gerekirse farklı bir özelliğim olduğunu düşünmüyorum. Farklı bir özelliğimin olması ve kendime farklı vizyonlar katmak için bu oluşuma katılmak istiyorum."
+},
+{
+"kod": "a41",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Ön Lisans",
+"universite": "İSTANBUL YENİ YÜZYIL ÜNİVERSİTESİ",
+"bolum": "Lojistik",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Lojistik sektörünü daha yakından tanımak, kendimi geliştirmek ve sektöre dair yeni bilgiler edinmek için katılmak istiyorum.",
+"nasil_haberdar": "LinkedIn üzerinden lojistik alanındaki içerikleri ve kariyer fırsatlarını takip ederken LogisticsGlossary ile karşılaştım.",
+"beklentiler": "Lojistik sektörünü daha yakından tanımak, yeni bilgiler edinmek ve ekip çalışmalarında sorumluluk alarak kendimi geliştirmek.",
+"katki": "Yeni mezun olduğum için öncelikli hedefim öğrenmek ve kendimi geliştirmek. Verilen sorumlulukları öğrenerek yerine getirmek ve projelere aktif şekilde katkı sağlamak isterim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri, Araştırma & Raporlama, Proje Yönetimi, Etkinlik Organizasyonu",
+"yetkinlikler": "Araştırma, İletişim, Organizasyon, Proje yönetimi, Satış, Pazarlama, Excel, İngilizce, Sunum",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "İstanbul Yeni Yüzyıl Üniversitesi Erasmus Kulübü’nde başkan yardımcılığı görevini üstlendim; mezuniyetim nedeniyle devam edemedim. Uluslararası Ticaret ve Lojistik Kulübü ile Müzik Kulübü üyeliğim kapsamında düzenlenen sektör gezileri ve sosyal etkinliklere katıldım.",
+"lojistik_konu_ilgisi": "Lojistik Yönetimi, Uluslararası Ticaret, Gümrük, Dış Ticaret, Denizcilik, Sürdürülebilirlik",
+"ingilizce_seviyesi": "Temel (A2)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Yeni mezunların lojistik sektörünü ve kariyer seçeneklerini daha iyi tanımasına yönelik çalışmalarda görev almak isterim.",
+"farklilik": "Öğrenmeye açık, sorumluluk almaktan çekinmeyen ve lojistik alanında kendini geliştirmeye istekli bir yeni mezun olmam."
+},
+{
+"kod": "a42",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Lisans",
+"universite": "BAŞKENT ÜNİVERSİTESİ (ANKARA)",
+"bolum": "Yönetim Bilişim Sistemleri",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "işe ihtiyacım var",
+"nasil_haberdar": "linkedln",
+"beklentiler": "Kendime alanıma uygun değer katmak",
+"katki": "Kullanıcı ve potansiyel artışı",
+"ilgi_alanlari": "İş Geliştirme, Proje Yönetimi, Veri Analizi",
+"yetkinlikler": "Canva, Excel, PowerPoint, Figma, Python, SQL, Yapay zekâ araçları, İletişim, Sunum, Organizasyon, Proje yönetimi, Satış, Pazarlama, İngilizce",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Check-Up MSP (B2B SaaS Projesi - Orcabit)/ İş Geliştirme Takım Lideri / Check-Up MSP bünyesinde, Orcabit’in SaaS yazılımının geliştirilmesi ve konumlandırılması süreçlerinde görev alan3 kişilik iş geliştirme ekibinin takım liderliğini üstlendim.SaaS yazılımının pazara hazırlık stratejilerini geliştirdim; ürünün yazılım testlerini ve fonksiyonel iş analizisüreçlerini yönettim.Pazardaki rekabet avantajını belirlemek adına kapsamlı rakip ürün analizleri gerçekleştirdim; elde edilen veriler doğrultusunda ürün geliştirme süreçlerini destekleyerek B2B satış stratejilerini yapılandırdım.Potansiyel kurumsal müşterilere yönelik ürün sunumları ve teknik demolar gerçekleştirdim Başkent Üniversitesi Mobil Uygulama Yarışması / Proje Kurucusu & Takım Lideri/Sürdürülebilirlik odaklı \"Yeşil Cüzdan\" mobil uygulama fikrini uçtan uca tasarladım.Proje için 4 kişilik ekip oluşturdum.Yarışmada 2.'lik derecesi elde ettim. KonuşarakÖğren.com SEO Case Study Yarışması / Reddit ve Quora platformlarına özel organik içerik stratejileri geliştirdim; UTM parametreleri üzerinden performans takibi, içerik analizi ve veri takibi gerçekleştirerek yarışmada 3.'lük derecesi kazandım Yönetim Bilişim Sistemleri topluluğu / Başkan yardımcısı",
+"lojistik_konu_ilgisi": "Lojistikte Veri Analitiği, Lojistik Teknolojileri, Yapay Zeka, Sürdürülebilirlik",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "",
+"talep_edilen_rol": "İş Geliştirme",
+"proje_fikri": "YOK",
+"farklilik": "Karar verme , problem çözme ve düzenli çalışma."
+},
+{
+"kod": "a43",
+"statu": "Çalışan / Profesyonel",
+"ogrenim_seviyesi": "Lisans",
+"universite": "İSTANBUL GELİŞİM ÜNİVERSİTESİ",
+"bolum": "Havacılık Yönetimi",
+"kurum": "Lcwakiki",
+"pozisyon": "Depo Personeli",
+"neden_katilmak": "Kendi kariyerim için farklı bir oluşum içerisinde olmak ve sektördeki güncel gelişmeleri takip etmek için bu platformu kullanmak istiyorum. Ayrıca, sahip olduğum lojistik deneyimini paylaşarak ve soruları yanıtlayarak topluluğa katkı sağlamayı da hedefliyorum. Bu sayede hem kendi bilgimi tazeleyip derinleştirebilir hem de sektördeki diğer profesyonellerle bağlantı kurabilirim.”",
+"nasil_haberdar": "Linkedln üzerinden bilgi sahibi oldum",
+"beklentiler": "Sektörden insanlarla tanışmak ve kendimi geliştirmek",
+"katki": "LogisticsGlossary’nin yalnızca bir yer olmaktan çıkıp, sektör profesyonellerinin başvurabileceği dinamik ve güvenilir bir bilgi rehberine dönüşmesine katkı sunmaktır. Bilgi birikimimi, araştırma disiplinimi ve iletişim becerilerimi bu ekosistemin büyümesi için kullanmaya hazırım.”",
+"ilgi_alanlari": "Kurumsal İletişim, İletişim & Halkla İlişkiler",
+"yetkinlikler": "Organizasyon",
+"onceki_deneyim_var_mi": "Evet",
+"onceki_deneyim_detay": "Sivil Havacılık Platformu Yönetici Nexus Business Network Üye AEROLMANAGE üye",
+"lojistik_konu_ilgisi": "Havacılık, Lojistik Yönetimi, Tedarik Zinciri Yönetimi, Yapay Zeka",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Gönüllü Destek",
+"proje_fikri": "Şu an için bir fikrim yok",
+"farklilik": "Uygulamalara vereceğim destek"
+},
+{
+"kod": "a44",
+"statu": "Yeni Mezun",
+"ogrenim_seviyesi": "Ön Lisans",
+"universite": "MANİSA CELÂL BAYAR ÜNİVERSİTESİ",
+"bolum": "Lojistik",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "Lojistik sektöründe güncel gelişmeleri ve terim standardizasyonunu yakından takip etmek, alanındaki uzman isimlerle bilgi alışverişinde bulunmak ve mesleki gelişimimi sürekli kılmak için katılmak istiyorum. Lojistik alanındaki teorik bilgimi ve operasyonel merakımı bu vizyoner toplulukla geliştirmeyi hedefliyorum.",
+"nasil_haberdar": "LinkedIn platformu üzerinden yapılan paylaşım vasıtasıyla haberdar oldum.",
+"beklentiler": "Lojistik alanında deneyimli profesyonellerle etkileşimde bulunmak, sektördeki fırsatları ve gelişmeleri takip ederek kariyer yolculuğuma yön verecek yeni bakış açıları kazanmayı bekliyorum.",
+"katki": "Lojistik eğitimim, gümrük stajı tecrübem ve öğrenmeye açık yapımla topluluk içi tartışmalara aktif katılım sağlayabilirim. Ayrıca platform içeriklerini kendi profesyonel ağımla paylaşarak topluluğun büyümesine ve etkileşiminin artmasına destek olabilirim.",
+"ilgi_alanlari": "Lojistik & Tedarik Zinciri",
+"yetkinlikler": "PowerPoint, Araştırma, Diğer",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": "Yok",
+"lojistik_konu_ilgisi": "Karayolu Taşımacılığı, Denizcilik, Dış Ticaret, Üretim & Operasyon, Tedarik Zinciri Yönetimi, Lojistik Yönetimi, Gümrük, Depo & Stok Yönetimi, Demiryolu",
+"ingilizce_seviyesi": "Başlangıç (A1)",
+"konusma_seviyesi": "Temel",
+"diger_diller": "yok",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "Lojistik terimlerini görsellerle destekleyerek sosyal medyada daha anlaşılır hale getirmek ve takipçilerin ilgisini çekecek düzenli paylaşımlar üretmek isterim.",
+"farklilik": "Lojistik alanındaki teorik eğitimimi gümrük stajımdaki pratik sahayla birleştirmiş olmam ve öğrenmeye karşı duyduğum yüksek motivasyondur. Dijital araçlara yatkınlığım, iletişim becerilerim ve sorumluluk alma isteğim sayesinde ekibe hem hızlı uyum sağlayabilir hem de enerjimle içerik üretimine aktif katkı sunabilirim."
+},
+{
+"kod": "a45",
+"statu": "Üniversite Öğrencisi",
+"ogrenim_seviyesi": "Lisans",
+"universite": "PAMUKKALE ÜNİVERSİTESİ (DENİZLİ)",
+"bolum": "Uluslararası Ticaret ve Lojistik",
+"kurum": "",
+"pozisyon": "",
+"neden_katilmak": "LogisticsGlossary’ye katılmak istememin temel nedeni, lojistik ve tedarik zinciri alanındaki bilgimi geliştirmek, sektördeki güncel gelişmeleri takip etmek ve bu alana ilgi duyan kişilerle bilgi alışverişinde bulunmak. Aynı zamanda farklı bakış açıları kazanarak profesyonel çevremi genişletmek ve öğrendiklerimi gelecekteki kariyerime katkı sağlayacak şekilde kullanmak istiyorum.",
+"nasil_haberdar": "Linkedln ortak bağlantılarım aracılığıyla tanıştım",
+"beklentiler": "Platformdan beklentim, lojistik ve tedarik zinciri alanındaki güncel gelişmeleri ve sektörel bilgileri takip edebilmek, farklı deneyimlere sahip kişilerle bilgi alışverişinde bulunabilmek ve kendimi bu alanda geliştirebileceğim fırsatlar yakalamaktır. Ayrıca sektör profesyonelleriyle bağlantı kurarak yeni bakış açıları kazanmayı ve kariyerime katkı sağlayacak bir network oluşturmayı hedefliyorum.",
+"katki": "Sosyal medyaya olan ilgim sayesinde LogisticsGlossary’nin sosyal medya görünürlüğüne ve içerik üretim süreçlerine katkı sağlayabileceğimi düşünüyorum. Güncel ve dikkat çekici içerik fikirleri geliştirmek, paylaşımların daha geniş kitlelere ulaşmasına yardımcı olmak ve platformun dijital iletişimini güçlendirmek konusunda aktif rol almak isterim.",
+"ilgi_alanlari": "İçerik Üretimi, Sosyal Medya, Lojistik & Tedarik Zinciri, Üniversite Temsilciliği, Topluluk Yönetimi, Proje Yönetimi",
+"yetkinlikler": "Canva, Yapay zekâ araçları, Fotoğraf / Video, Pazarlama, İngilizce, Proje yönetimi, Organizasyon, Sosyal medya yönetimi, İçerik yazarlığı, Akademik yazım, Excel, PowerPoint, CapCut, Sunum, Satış, İletişim, Araştırma",
+"onceki_deneyim_var_mi": "Hayır",
+"onceki_deneyim_detay": ".",
+"lojistik_konu_ilgisi": "Uluslararası Ticaret, Tedarik Zinciri Yönetimi, Satın Alma, Dış Ticaret, Üretim & Operasyon, Yapay Zeka",
+"ingilizce_seviyesi": "Orta (B1)",
+"konusma_seviyesi": "Orta",
+"diger_diller": "",
+"talep_edilen_rol": "Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.",
+"proje_fikri": "bilgimi geliştirmek, sektördeki güncel gelişmeleri takip etmek ve bu alana ilgi duyan kişilerle bilgi alışverişinde bulunmak. Aynı zamanda farklı bakış açıları kazanarak profesyonel çevremi genişletmek ve öğrendiklerimi gelecekteki kariyerime katkı sağlayacak şekilde kullanmak istiyorum.",
+"farklilik": "Beni diğer adaylardan farklı kılan en önemli özelliklerimden biri, sosyal medya ve iletişim alanındaki deneyimim. LinkedIn’de 3.000’in üzerinde bağlantıya, Instagram’da ise 27.000’in üzerinde takipçiye sahip olmam, dijital içerik üretimi ve kitlelerle etkileşim konusunda deneyimli olduğumu gösteriyor. Bunun yanında İngilizce bilgim sayesinde uluslararası kaynakları takip edebiliyor ve farklı kitlelerle iletişim kurabiliyorum. Bu özelliklerimi LogisticsGlossary’nin sosyal medya ve iletişim çalışmalarına katkı sağlamak için kullanabileceğimi düşünüyorum."
+}
+];
+
+/* ---------- 2. SABİT SEÇENEK LİSTELERİ ---------- */
+const DECISION_OPTIONS = [
+  {value:'Kesin Kabul', icon:'check', cls:'success'},
+  {value:'Beklemede', icon:'clock', cls:'muted'},
+  {value:'Red', icon:'x', cls:'danger'},
+];
+const DECISION_COLOR_VAR = {success:'var(--success)', warning:'var(--warning)', blue:'var(--primary)', muted:'var(--text-faint)', danger:'var(--danger)'};
+const ICON_PATHS = {
+  check:  '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5.5-5.5"/>',
+  book:   '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v16H6.5A2.5 2.5 0 0 0 4 21.5v-16z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v16h5.5a2.5 2.5 0 0 1 2.5 2.5v-16z"/>',
+  cap:    '<path d="M12 4.5L2.5 9 12 13.5 21.5 9 12 4.5z"/><path d="M6 11v4.2c0 1.44 2.7 2.6 6 2.6s6-1.16 6-2.6V11"/>',
+  clock:  '<circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/>',
+  x:      '<circle cx="12" cy="12" r="9"/><path d="M14.8 9.2l-5.6 5.6M9.2 9.2l5.6 5.6"/>',
+  target: '<path d="M12 2.3l1.9 5.55L19.7 9l-5.8 1.9L12 16.4l-1.9-5.5L4.3 9l5.8-1.15L12 2.3z"/>',
+  gem:    '<path d="M12 2.5l7 6.5-7 12.5-7-12.5z"/><path d="M5 9h14"/>',
+};
+function iconSvg(name, opts){
+  opts = opts || {};
+  const size = opts.size || 14;
+  const color = opts.color || 'currentColor';
+  const fill = opts.fill===undefined ? 'none' : opts.fill;
+  const strokeW = opts.strokeWidth || 1.8;
+  return `<svg class="dicon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}" stroke="${color}" stroke-width="${strokeW}" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2.5px;flex-shrink:0;">${ICON_PATHS[name]||''}</svg>`;
+}
+function decisionIconSvg(d, size){
+  return iconSvg(d.icon, {size: size||14, color: DECISION_COLOR_VAR[d.cls]});
+}
+const INTERVIEW_STATUS_OPTIONS = ['Planlanmadı','Planlandı','Tamamlandı','İptal Edildi'];
+const TEAM_OPTIONS = ["Akademik İçerik","Araştırma & Raporlama","Diğer","Etkinlik Organizasyonu","Eğitim & Eğitim Organizasyonu","Grafik Tasarım","Kurumsal İletişim","Lojistik & Tedarik Zinciri","Proje Yönetimi","Sosyal Medya","Sponsorluk & İş Birlikleri","Teknoloji / Yazılım","Topluluk Yönetimi","Veri Analizi","Video / Reels","Yapay Zeka","YouTube","Üniversite Temsilciliği","İletişim & Halkla İlişkiler","İnsan Kaynakları","İçerik Üretimi","İş Geliştirme"];
+const ROLE_OPTIONS = ["Araştırma Ekibi","Belirli bir pozisyon tercihim yok, uygun olduğum alanda değerlendirilmek istiyorum.","Etkinlik Ekibi","Gönüllü Destek","Proje Asistanı","İçerik Ekibi","İş Geliştirme","Şehir Temsilcisi"];
+const ENGLISH_OPTIONS = ["Başlangıç (A1)","Temel (A2)","Orta (B1)","Orta Üstü (B2)","İleri Düzey (C2)"];
+const EDUCATION_OPTIONS = ["Ön Lisans","Lisans","Yüksek Lisans"];
+
+const SCORE_CRITERIA = [
+  {key:'communication', label:'İletişim'},
+  {key:'motivation', label:'Motivasyon'},
+  {key:'logistics_knowledge', label:'Lojistik / Sektör Bilgisi'},
+  {key:'english', label:'İngilizce'},
+  {key:'problem_solving', label:'Problem Çözme'},
+  {key:'teamwork', label:'Takım Çalışması'},
+  {key:'learning', label:'Öğrenme İsteği'},
+  {key:'responsibility', label:'Sorumluluk Bilinci'},
+  {key:'role_fit', label:'Rol Uygunluğu'},
+];
+
+/* ---------- 3. YARDIMCI FONKSİYONLAR ---------- */
+function esc(str){
+  if(str===undefined||str===null) return '';
+  return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function nl2br(str){ return esc(str).replace(/\n/g,'<br>'); }
+function initials(kod){ return (kod||'??').slice(0,2).toUpperCase(); }
+function nowIso(){ return new Date().toISOString(); }
+function fmtDate(iso){
+  if(!iso) return '—';
+  try{
+    const d = new Date(iso);
+    if(isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString('tr-TR', {day:'2-digit', month:'short', year:'numeric'}) + ' ' + d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){ return iso; }
+}
+function decisionMeta(val){ return DECISION_OPTIONS.find(d=>d.value===val) || DECISION_OPTIONS.find(d=>d.value==='Beklemede'); }
+function badgeClassForDecision(val){
+  const m = decisionMeta(val);
+  return 'badge-' + (m.cls==='blue'?'blue':m.cls);
+}
+function interviewStatusBadgeClass(status){
+  if(status==='Tamamlandı') return 'badge-success';
+  if(status==='Planlandı') return 'badge-blue';
+  if(status==='İptal Edildi') return 'badge-danger';
+  return 'badge-muted';
+}
+function uid(){ return 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function debounce(fn, wait){
+  let t;
+  return function(...args){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,args), wait); };
+}
+
+/* ---------- 4. KALICI DEPOLAMA (window.storage) ---------- */
+const STORAGE_KEY = 'lg-hr-candidate-states-v1';
+let STATE = {};          // { [kod]: mutableCandidateState }
+let storageReady = false;
+
+function defaultState(kod){
+  const scores = {};
+  SCORE_CRITERIA.forEach(c => scores[c.key] = 0);
+  return {
+    kod,
+    decision: 'Beklemede',
+    strengths: '',
+    risks: '',
+    assigned_team: '',
+    interview_status: 'Planlanmadı',
+    interview_date: '',
+    interviewer: '',
+    overall_evaluation: '',
+    scores,
+    development_areas: '',
+    interview_risk: '',
+    interviewer_recommendation: '',
+    manager_notes: [],
+    created_at: nowIso(),
+    updated_at: nowIso(),
+  };
+}
+
+async function loadStateFromStorage(){
+  setSaveIndicator('loading');
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    if(res && res.value){
+      STATE = JSON.parse(res.value);
+    } else {
+      STATE = {};
+    }
+  }catch(e){
+    STATE = {};
+  }
+  // Eksik adaylar için varsayılan state oluştur (Excel'de olup state'te olmayanlar)
+  SEED_CANDIDATES.forEach(c=>{
+    if(!STATE[c.kod]){
+      STATE[c.kod] = defaultState(c.kod);
+    } else {
+      // eski kayıtlarda eksik alan olabilir, defaultlarla birleştir
+      const base = defaultState(c.kod);
+      STATE[c.kod] = Object.assign({}, base, STATE[c.kod]);
+      STATE[c.kod].scores = Object.assign({}, base.scores, STATE[c.kod].scores||{});
+      if(!Array.isArray(STATE[c.kod].manager_notes)) STATE[c.kod].manager_notes = [];
+      // Kaldırılan karar seçenekleri (Eğitim / Yüksek Lisans) eski kayıtlarda varsa Beklemede'ye geçir
+      if(!DECISION_OPTIONS.find(d=>d.value===STATE[c.kod].decision)){
+        STATE[c.kod].decision = 'Beklemede';
+      }
+    }
+  });
+  storageReady = true;
+  setSaveIndicator('saved');
+}
+
+const persistState = debounce(async function(){
+  setSaveIndicator('saving');
+  try{
+    const result = await window.storage.set(STORAGE_KEY, JSON.stringify(STATE), false);
+    if(result){
+      setSaveIndicator('saved');
+      showToast('Kaydedildi');
+    } else {
+      setSaveIndicator('error');
+    }
+  }catch(e){
+    setSaveIndicator('error');
+  }
+}, 450);
+
+function updateCandidateState(kod, patch){
+  if(!STATE[kod]) STATE[kod] = defaultState(kod);
+  Object.assign(STATE[kod], patch, {updated_at: nowIso()});
+  persistState();
+}
+function updateScore(kod, scoreKey, value){
+  if(!STATE[kod]) STATE[kod] = defaultState(kod);
+  STATE[kod].scores[scoreKey] = value;
+  STATE[kod].updated_at = nowIso();
+  persistState();
+}
+
+function setSaveIndicator(mode){
+  const el = document.getElementById('saveIndicator');
+  const txt = document.getElementById('saveIndicatorText');
+  if(!el) return;
+  el.classList.remove('saved','saving');
+  if(mode==='saving'){ el.classList.add('saving'); txt.textContent='Kaydediliyor...'; }
+  else if(mode==='saved'){ el.classList.add('saved'); txt.textContent='Kaydedildi'; }
+  else if(mode==='loading'){ txt.textContent='Yükleniyor...'; }
+  else if(mode==='error'){ txt.textContent='Kayıt hatası'; }
+}
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  document.getElementById('toastText').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ---------- 5. VERİ BİRLEŞTİRME ---------- */
+function getMergedCandidates(){
+  return SEED_CANDIDATES.map(c => Object.assign({}, c, STATE[c.kod] || defaultState(c.kod)));
+}
+function getCandidate(kod){
+  const seed = SEED_CANDIDATES.find(c=>c.kod===kod);
+  if(!seed) return null;
+  return Object.assign({}, seed, STATE[kod] || defaultState(kod));
+}
+function avgScore(cand){
+  const vals = SCORE_CRITERIA.map(c=>cand.scores[c.key]||0).filter(v=>v>0);
+  if(!vals.length) return 0;
+  return Math.round((vals.reduce((a,b)=>a+b,0)/vals.length)*10)/10;
+}
+
+/* ---- 8b. ÖN DEĞERLENDİRME SKORU (kural bazlı, şeffaf bir başlangıç noktası) ----
+   Bu bir "AI kararı" değildir — İK ekibinin mülakat önceliklendirmesi için
+   basit, açıklanabilir bir puanlamadır. Nihai karar her zaman mülakat +
+   insan değerlendirmesiyle verilmelidir. Mülakat puanı girildiyse (avgScore),
+   ön-değerlendirme skorunun yerini alır. */
+const ENGLISH_WEIGHT = {'Başlangıç (A1)':1,'Temel (A2)':2,'Orta (B1)':3,'Orta Üstü (B2)':4,'İleri Düzey (C2)':5};
+const STATU_WEIGHT = {'Üniversite Öğrencisi':0,'Yeni Mezun':1,'Çalışan / Profesyonel':2,'Diğer':0};
+function computePotentialScore(c, skillFreq){
+  const reasons = [];
+  let score = 0;
+  const eng = ENGLISH_WEIGHT[c.ingilizce_seviyesi] || 0;
+  score += eng;
+  if(eng>=4) reasons.push('İleri seviye İngilizce ('+c.ingilizce_seviyesi+')');
+  const statuW = STATU_WEIGHT[c.statu] || 0;
+  score += statuW;
+  if(statuW===2) reasons.push('Sektörde çalışıyor — ' + (c.pozisyon || c.kurum || 'profesyonel deneyim'));
+  if(c.onceki_deneyim_var_mi==='Evet'){ score += 2; reasons.push('Topluluk / kulüp / gönüllülük deneyimi var'); }
+  if(c.ogrenim_seviyesi==='Yüksek Lisans'){ score += 1; reasons.push('Yüksek Lisans eğitimi'); }
+  if(c.talep_edilen_rol && c.talep_edilen_rol.indexOf('Belirli bir pozisyon')===-1){ score += 1; reasons.push('Net bir rol talep ediyor: ' + c.talep_edilen_rol); }
+  const rare = getRareSkills(c, skillFreq);
+  if(rare.length){ score += Math.min(rare.length, 2); reasons.push('Nadir yetkinlik: ' + rare.join(', ')); }
+  return {score, reasons, rareSkills: rare};
+}
+
+/* ---- Nadir yetkinlik tespiti: diğer adayların çoğunda bulunmayan yetkinlikler ---- */
+const RARE_SKILL_MAX = 4; // aday havuzunun ~%10'undan azında geçen yetkinlik nadir sayılır
+function computeSkillFrequency(list){
+  const freq = {};
+  list.forEach(c=>{
+    (c.yetkinlikler||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(s=>{
+      freq[s] = (freq[s]||0) + 1;
+    });
+  });
+  return freq;
+}
+function getRareSkills(c, freq){
+  return (c.yetkinlikler||'').split(',').map(s=>s.trim()).filter(Boolean).filter(s=> freq[s] && freq[s] <= RARE_SKILL_MAX);
+}
+
+function topCandidatesPanel(list){
+  const skillFreq = computeSkillFrequency(list);
+  const scored = list
+    .filter(c=>c.decision!=='Red') // reddedilenleri öne çıkarma
+    .map(c=>Object.assign({}, c, computePotentialScore(c, skillFreq)));
+
+  const ranked = scored.slice().sort((a,b)=>b.score-a.score).slice(0,6);
+  const rareOnly = scored
+    .filter(c=>c.rareSkills.length>0)
+    .sort((a,b)=> b.rareSkills.length - a.rareSkills.length || b.score - a.score);
+
+  if(!ranked.length && !rareOnly.length) return '';
+
+  const cardHtml = (c, extraNote) => `
+    <div class="team-card" data-nav-candidate="${esc(c.kod)}" style="cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <h3>Aday ${esc(c.kod.toUpperCase())}</h3>
+        <span class="badge badge-blue">Skor ${c.score}</span>
+      </div>
+      <div class="cell-muted" style="font-size:12px;margin-bottom:8px;">${esc(shortRole(c.talep_edilen_rol))} · ${esc(c.ingilizce_seviyesi)}</div>
+      <ul style="margin:0;padding-left:16px;font-size:12px;color:#374151;line-height:1.6;">
+        ${c.reasons.length ? c.reasons.map(r=>`<li>${esc(r)}</li>`).join('') : '<li>Temel kriterleri karşılıyor</li>'}
+      </ul>
+      ${extraNote || ''}
+    </div>`;
+
+  return `
+  <div class="panel">
+    <div class="panel-header">
+      <h2>${iconSvg('target',{size:17,color:'var(--primary)'})} Öne Çıkan Adaylar — Ön Değerlendirme</h2>
+      <span class="cell-muted" style="font-size:12px;">Kural bazlı, şeffaf bir sıralama · nihai kararı mülakat belirler</span>
+    </div>
+    <div class="panel-body">
+      <div class="subblock">
+        <h3>Genel Skora Göre Öne Çıkanlar</h3>
+        <div class="teams-grid">
+          ${ranked.map(c=>cardHtml(c)).join('')}
+        </div>
+      </div>
+      ${rareOnly.length ? `
+      <div class="subblock" style="margin-top:22px;">
+        <h3>${iconSvg('gem',{size:12,color:'var(--accent)'})} Nadir Yetkinliğe Sahip Adaylar</h3>
+        <div class="hint" style="margin:-2px 0 12px;">Havuzdaki adayların çoğunda bulunmayan (en fazla ${RARE_SKILL_MAX} adayda geçen) özel yetkinliklere sahip adaylar — kararlarına bakılmaksızın burada listelenir, çünkü havuzda başka kimsenin karşılamadığı bir ihtiyacı doldurabilirler.</div>
+        <div class="teams-grid">
+          ${rareOnly.map(c=>`
+            <div class="team-card" data-nav-candidate="${esc(c.kod)}" style="cursor:pointer;border-color:#DBEAFE;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                <h3>Aday ${esc(c.kod.toUpperCase())}</h3>
+                <span class="badge ${badgeClassForDecision(c.decision)}" style="padding:2px 8px;font-size:10.5px;">${esc(c.decision)}</span>
+              </div>
+              <div class="cell-muted" style="font-size:12px;margin-bottom:8px;">${esc(shortRole(c.talep_edilen_rol))}</div>
+              <div class="tag-list">${c.rareSkills.map(s=>`<span class="tag" style="background:#EFF6FF;color:var(--accent);">${esc(s)}</span>`).join('')}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>` : ''}
+    </div>
+  </div>`;
+}
+
+/* ---------- 6. YÖNLENDİRME (ROUTER) ---------- */
+let currentFilters = {q:'', role:'', decision:'', team:'', english:'', interview:'', education:''};
+
+function parseHash(){
+  const h = location.hash.replace('#/','') || 'dashboard';
+  const parts = h.split('/');
+  return {route: parts[0], param: parts[1]};
+}
+window.addEventListener('hashchange', render);
+
+function navigate(route, param){
+  location.hash = '#/' + route + (param ? '/'+param : '');
+}
+
+/* ---------- 7. ANA RENDER ---------- */
+function render(){
+  const {route, param} = parseHash();
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.route===route || (route==='candidate')));
+  const main = document.getElementById('mainContent');
+  if(route==='dashboard') main.innerHTML = viewDashboard();
+  else if(route==='candidates') main.innerHTML = viewCandidatesList();
+  else if(route==='interviews') main.innerHTML = viewInterviews();
+  else if(route==='decisions') main.innerHTML = viewDecisions();
+  else if(route==='teams') main.innerHTML = viewTeams();
+  else if(route==='candidate') main.innerHTML = viewCandidateProfile(param);
+  else main.innerHTML = viewDashboard();
+  wireDynamicEvents();
+  closeMobileSidebar();
+  window.scrollTo({top:0, behavior:'instant' in window ? 'instant':'auto'});
+}
+
+/* ---------- 8. DASHBOARD ---------- */
+function computeKpis(list){
+  const total = list.length;
+  const reviewed = list.filter(c=>c.interview_status!=='Planlanmadı' || c.decision!=='Beklemede').length;
+  const completed = list.filter(c=>c.interview_status==='Tamamlandı').length;
+  const pending = list.filter(c=>c.decision==='Beklemede').length;
+  const kesin = list.filter(c=>c.decision==='Kesin Kabul').length;
+  const red = list.filter(c=>c.decision==='Red').length;
+  const beklemede = list.filter(c=>c.decision==='Beklemede').length;
+  return {total, reviewed, completed, pending, kesin, red, beklemede};
+}
+
+function viewDashboard(){
+  const list = getMergedCandidates();
+  const k = computeKpis(list);
+  return `
+    <div class="topbar">
+      <div><h1>Dashboard</h1><div class="sub">LogisticsGlossary aday değerlendirme genel görünümü</div></div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card accent-primary"><div class="kpi-label">Toplam Aday</div><div class="kpi-value">${k.total}</div></div>
+      <div class="kpi-card accent-primary"><div class="kpi-label">İncelenen Aday</div><div class="kpi-value">${k.reviewed}</div></div>
+      <div class="kpi-card accent-success"><div class="kpi-label">Mülakatı Tamamlanan</div><div class="kpi-value">${k.completed}</div></div>
+      <div class="kpi-card accent-muted"><div class="kpi-label">Karar Bekleyen</div><div class="kpi-value">${k.pending}</div></div>
+      <div class="kpi-card accent-success"><div class="kpi-label">${iconSvg('check',{size:13,color:'var(--success)'})} Kesin Kabul</div><div class="kpi-value">${k.kesin}</div></div>
+      <div class="kpi-card accent-danger"><div class="kpi-label">${iconSvg('x',{size:13,color:'var(--danger)'})} Red</div><div class="kpi-value">${k.red}</div></div>
+      <div class="kpi-card accent-muted"><div class="kpi-label">${iconSvg('clock',{size:13,color:'var(--text-faint)'})} Beklemede</div><div class="kpi-value">${k.beklemede}</div></div>
+    </div>
+    ${topCandidatesPanel(list)}
+    ${candidateTablePanel(list, 'Aday Listesi')}
+  `;
+}
+
+/* ---------- 9. ADAY TABLOSU (paylaşılan bileşen) ---------- */
+function candidateTablePanel(list, title){
+  const filtered = applyFilters(list);
+  return `
+  <div class="panel">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="searchInput" placeholder="Aday ara... (kod, üniversite, bölüm)" value="${esc(currentFilters.q)}">
+      </div>
+      <select class="filter-select" id="filterRole">
+        <option value="">Tüm Roller</option>
+        ${ROLE_OPTIONS.map(r=>`<option value="${esc(r)}" ${currentFilters.role===r?'selected':''}>${esc(r.length>28?r.slice(0,28)+'…':r)}</option>`).join('')}
+      </select>
+      <select class="filter-select" id="filterDecision">
+        <option value="">Tüm Kararlar</option>
+        ${DECISION_OPTIONS.map(d=>`<option value="${esc(d.value)}" ${currentFilters.decision===d.value?'selected':''}>${esc(d.value)}</option>`).join('')}
+      </select>
+      <select class="filter-select" id="filterTeam">
+        <option value="">Tüm Ekipler</option>
+        ${TEAM_OPTIONS.map(t=>`<option value="${esc(t)}" ${currentFilters.team===t?'selected':''}>${esc(t)}</option>`).join('')}
+      </select>
+      <select class="filter-select" id="filterEnglish">
+        <option value="">Tüm İngilizce Seviyeleri</option>
+        ${ENGLISH_OPTIONS.map(e=>`<option value="${esc(e)}" ${currentFilters.english===e?'selected':''}>${esc(e)}</option>`).join('')}
+      </select>
+      <select class="filter-select" id="filterInterview">
+        <option value="">Tüm Mülakat Durumları</option>
+        ${INTERVIEW_STATUS_OPTIONS.map(s=>`<option value="${esc(s)}" ${currentFilters.interview===s?'selected':''}>${esc(s)}</option>`).join('')}
+      </select>
+      <select class="filter-select" id="filterEducation">
+        <option value="">Tüm Eğitim Durumları</option>
+        ${EDUCATION_OPTIONS.map(e=>`<option value="${esc(e)}" ${currentFilters.education===e?'selected':''}>${esc(e)}</option>`).join('')}
+      </select>
+      <span class="clear-filters" id="clearFilters">Filtreleri Temizle</span>
+    </div>
+    <div class="result-count">${filtered.length} / ${list.length} aday gösteriliyor</div>
+    <div class="table-wrap">
+      ${filtered.length ? `
+      <table class="candidates">
+        <thead><tr>
+          <th>Aday</th><th>Talep Ettiği Rol</th><th>İngilizce</th><th>Eğitim</th><th>Atanan Ekip</th><th>Karar</th><th>Mülakat</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${filtered.map(c=>`
+            <tr data-nav-candidate="${esc(c.kod)}">
+              <td><div class="name-cell"><div class="avatar">${initials(c.kod)}</div><div><div class="name-main">Aday ${esc(c.kod.toUpperCase())}</div><div class="name-sub">${esc(c.universite||'—')}</div></div></div></td>
+              <td class="cell-muted">${esc(shortRole(c.talep_edilen_rol))}</td>
+              <td class="cell-muted">${esc(c.ingilizce_seviyesi||'—')}</td>
+              <td class="cell-muted">${esc(c.ogrenim_seviyesi||'—')}</td>
+              <td class="cell-muted">${esc(c.assigned_team||'—')}</td>
+              <td><span class="badge ${badgeClassForDecision(c.decision)}"><span class="badge-dot"></span>${esc(c.decision)}</span></td>
+              <td><span class="badge ${interviewStatusBadgeClass(c.interview_status)}">${esc(c.interview_status)}</span></td>
+              <td class="chev">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>` : `
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <h3>Sonuç bulunamadı</h3><p>Arama veya filtre kriterlerinizi değiştirmeyi deneyin.</p>
+        </div>
+      `}
+    </div>
+  </div>`;
+}
+function shortRole(r){
+  if(!r) return '—';
+  return r.length > 34 ? r.slice(0,34)+'…' : r;
+}
+
+function applyFilters(list){
+  const f = currentFilters;
+  const q = f.q.trim().toLowerCase();
+  return list.filter(c=>{
+    if(q){
+      const hay = [c.kod, c.universite, c.bolum, c.kurum, c.pozisyon, c.talep_edilen_rol, c.assigned_team].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    if(f.role && c.talep_edilen_rol !== f.role) return false;
+    if(f.decision && c.decision !== f.decision) return false;
+    if(f.team && c.assigned_team !== f.team) return false;
+    if(f.english && c.ingilizce_seviyesi !== f.english) return false;
+    if(f.interview && c.interview_status !== f.interview) return false;
+    if(f.education && c.ogrenim_seviyesi !== f.education) return false;
+    return true;
+  });
+}
+
+/* ---------- 10. ADAYLAR VIEW ---------- */
+function viewCandidatesList(){
+  const list = getMergedCandidates();
+  return `
+    <div class="topbar">
+      <div><h1>Adaylar</h1><div class="sub">Tüm başvuranları arayın, filtreleyin ve profillerini inceleyin</div></div>
+    </div>
+    ${candidateTablePanel(list, 'Adaylar')}
+  `;
+}
+
+/* ---------- 11. MÜLAKATLAR VIEW ---------- */
+function viewInterviews(){
+  const list = getMergedCandidates();
+  const groups = {'Planlandı':[], 'Tamamlandı':[], 'Planlanmadı':[], 'İptal Edildi':[]};
+  list.forEach(c=>{ (groups[c.interview_status] || groups['Planlanmadı']).push(c); });
+  const order = ['Planlandı','Tamamlandı','Planlanmadı','İptal Edildi'];
+  return `
+    <div class="topbar">
+      <div><h1>Mülakatlar</h1><div class="sub">Mülakat durumuna göre adayların özeti</div></div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card accent-primary"><div class="kpi-label">Planlandı</div><div class="kpi-value">${groups['Planlandı'].length}</div></div>
+      <div class="kpi-card accent-success"><div class="kpi-label">Tamamlandı</div><div class="kpi-value">${groups['Tamamlandı'].length}</div></div>
+      <div class="kpi-card accent-muted"><div class="kpi-label">Planlanmadı</div><div class="kpi-value">${groups['Planlanmadı'].length}</div></div>
+      <div class="kpi-card accent-danger"><div class="kpi-label">İptal Edildi</div><div class="kpi-value">${groups['İptal Edildi'].length}</div></div>
+    </div>
+    ${order.map(status=>`
+      <div class="panel">
+        <div class="panel-header"><h2><span class="badge ${interviewStatusBadgeClass(status)}">${esc(status)}</span></h2><span class="cell-muted" style="font-size:12.5px;">${groups[status].length} aday</span></div>
+        <div class="panel-body">
+          ${groups[status].length ? `
+          <div class="table-wrap">
+          <table class="candidates">
+            <thead><tr><th>Aday</th><th>Mülakat Tarihi</th><th>Mülakatı Yapan</th><th>Ort. Puan</th><th>Karar</th><th></th></tr></thead>
+            <tbody>
+              ${groups[status].map(c=>`
+                <tr data-nav-candidate="${esc(c.kod)}">
+                  <td><div class="name-cell"><div class="avatar">${initials(c.kod)}</div><div class="name-main">Aday ${esc(c.kod.toUpperCase())}</div></div></td>
+                  <td class="cell-muted">${esc(c.interview_date || '—')}</td>
+                  <td class="cell-muted">${esc(c.interviewer || '—')}</td>
+                  <td class="cell-muted">${avgScore(c) || '—'}</td>
+                  <td><span class="badge ${badgeClassForDecision(c.decision)}">${esc(c.decision)}</span></td>
+                  <td class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></td>
+                </tr>`).join('')}
+            </tbody>
+          </table></div>` : `<div class="empty-state" style="padding:24px;"><p>Bu durumda aday yok.</p></div>`}
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+/* ---------- 12. KARARLAR VIEW (Kanban) ---------- */
+function viewDecisions(){
+  const list = getMergedCandidates();
+  return `
+    <div class="topbar">
+      <div><h1>Kararlar</h1><div class="sub">Aday kararlarına genel bakış — bir karta tıklayarak profile gidin</div></div>
+    </div>
+    <div class="kanban">
+      ${DECISION_OPTIONS.map(d=>{
+        const items = list.filter(c=>c.decision===d.value);
+        return `
+        <div class="kanban-col">
+          <div class="kanban-col-head"><b>${decisionIconSvg(d,15)} ${esc(d.value)}</b><span class="kanban-count">${items.length}</span></div>
+          ${items.map(c=>`
+            <div class="kanban-card" data-nav-candidate="${esc(c.kod)}">
+              <div class="kc-name">Aday ${esc(c.kod.toUpperCase())}</div>
+              <div class="kc-role">${esc(shortRole(c.talep_edilen_rol))}</div>
+            </div>
+          `).join('') || `<div class="empty-note">Aday yok</div>`}
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+/* ---------- 13. EKİPLER VIEW ---------- */
+function viewTeams(){
+  const list = getMergedCandidates();
+  const unassigned = list.filter(c=>!c.assigned_team);
+  return `
+    <div class="topbar">
+      <div><h1>Ekipler</h1><div class="sub">Atanan ekiplere göre aday dağılımı</div></div>
+    </div>
+    <div class="teams-grid">
+      <div class="team-card">
+        <h3>Atanmamış</h3>
+        <div class="team-count" style="color:var(--text-faint);">${unassigned.length}</div>
+        <div class="team-mini-list">
+          ${unassigned.map(c=>`<div class="team-mini-item" data-nav-candidate="${esc(c.kod)}"><span>Aday ${esc(c.kod.toUpperCase())}</span><span class="badge ${badgeClassForDecision(c.decision)}" style="padding:2px 7px;font-size:10.5px;">${esc(c.decision)}</span></div>`).join('') || `<div class="empty-note">Yok</div>`}
+        </div>
+      </div>
+      ${TEAM_OPTIONS.map(team=>{
+        const items = list.filter(c=>c.assigned_team===team);
+        if(!items.length) return '';
+        return `
+        <div class="team-card">
+          <h3>${esc(team)}</h3>
+          <div class="team-count">${items.length}</div>
+          <div class="team-mini-list">
+            ${items.map(c=>`<div class="team-mini-item" data-nav-candidate="${esc(c.kod)}"><span>Aday ${esc(c.kod.toUpperCase())}</span><span class="badge ${badgeClassForDecision(c.decision)}" style="padding:2px 7px;font-size:10.5px;">${esc(c.decision)}</span></div>`).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+/* ---------- 14. ADAY PROFİL SAYFASI ---------- */
+function viewCandidateProfile(kod){
+  const c = getCandidate(kod);
+  if(!c){
+    return `<div class="empty-state"><h3>Aday bulunamadı</h3><p><span class="back-link" data-nav="dashboard">Dashboard'a dön</span></p></div>`;
+  }
+  const dMeta = decisionMeta(c.decision);
+  const avg = avgScore(c);
+
+  return `
+  <span class="back-link" data-nav="candidates">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    Adaylara dön
+  </span>
+
+  <div class="panel profile-header">
+    <div class="profile-id-row">
+      <div class="avatar-lg">${initials(c.kod)}</div>
+      <div>
+        <h1>Aday ${esc(c.kod.toUpperCase())}</h1>
+        <div class="profile-meta">
+          <span>${esc(c.statu||'—')}</span><span class="sep">·</span>
+          <span>${esc(shortRole(c.talep_edilen_rol))}</span><span class="sep">·</span>
+          <span>${esc(c.assigned_team || 'Ekip atanmadı')}</span><span class="sep">·</span>
+          <span>${esc(c.ingilizce_seviyesi||'—')}</span><span class="sep">·</span>
+          <span>${esc(c.ogrenim_seviyesi||'—')}</span>
+        </div>
+      </div>
+    </div>
+    <span class="badge ${badgeClassForDecision(c.decision)}" style="font-size:13px;padding:8px 15px;">${decisionIconSvg(dMeta,15)} ${esc(c.decision)}</span>
+  </div>
+
+  <div class="profile-grid">
+    <div class="panel">
+      <div class="panel-header"><h2 class="section-title"><span class="num">1</span>Aday Bilgileri</h2></div>
+      <div class="panel-body">
+        <div class="info-list">
+          <div class="info-row"><div class="k">Aday Kodu</div><div class="v">${esc(c.kod)}</div></div>
+          <div class="info-row"><div class="k">Statü</div><div class="v">${esc(c.statu||'—')}</div></div>
+          <div class="info-row"><div class="k">Öğrenim Seviyesi</div><div class="v">${esc(c.ogrenim_seviyesi||'—')}</div></div>
+          <div class="info-row"><div class="k">Üniversite</div><div class="v">${esc(c.universite||'—')}</div></div>
+          <div class="info-row"><div class="k">Bölüm</div><div class="v">${esc(c.bolum||'—')}</div></div>
+          <div class="info-row"><div class="k">Çalıştığı Kurum</div><div class="v">${esc(c.kurum||'—')}</div></div>
+          <div class="info-row"><div class="k">Pozisyonu</div><div class="v">${esc(c.pozisyon||'—')}</div></div>
+          <div class="info-row"><div class="k">İngilizce Seviyesi</div><div class="v">${esc(c.ingilizce_seviyesi||'—')}</div></div>
+          <div class="info-row"><div class="k">Konuşma Seviyesi</div><div class="v">${esc(c.konusma_seviyesi||'—')}</div></div>
+          <div class="info-row"><div class="k">Diğer Diller</div><div class="v">${esc(c.diger_diller||'—')}</div></div>
+          <div class="info-row"><div class="k">Talep Ettiği Rol</div><div class="v">${esc(c.talep_edilen_rol||'—')}</div></div>
+          <div class="info-row"><div class="k">Önceki Topluluk/Proje Deneyimi</div><div class="v">${esc(c.onceki_deneyim_var_mi||'—')}</div></div>
+        </div>
+
+        <div class="subblock" style="margin-top:18px;">
+          <h3>İlgi Alanları</h3>
+          <div class="tag-list">${(c.ilgi_alanlari||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="tag">${esc(t)}</span>`).join('') || '<span class="cell-muted">—</span>'}</div>
+        </div>
+        <div class="subblock">
+          <h3>Yetkinlikler</h3>
+          <div class="tag-list">${(c.yetkinlikler||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="tag">${esc(t)}</span>`).join('') || '<span class="cell-muted">—</span>'}</div>
+        </div>
+        <div class="subblock">
+          <h3>Lojistikte İlgilendiği Konular</h3>
+          <div class="tag-list">${(c.lojistik_konu_ilgisi||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="tag">${esc(t)}</span>`).join('') || '<span class="cell-muted">—</span>'}</div>
+        </div>
+        <div class="subblock">
+          <h3>Önceki Deneyim Detayı</h3>
+          <div class="long-text">${nl2br(c.onceki_deneyim_detay) || '—'}</div>
+        </div>
+        <div class="subblock">
+          <h3>Neden Katılmak İstiyor</h3>
+          <div class="long-text">${nl2br(c.neden_katilmak) || '—'}</div>
+        </div>
+        <div class="subblock">
+          <h3>LogisticsGlossary'yi Nasıl Duydu</h3>
+          <div class="long-text">${nl2br(c.nasil_haberdar) || '—'}</div>
+        </div>
+        <div class="subblock">
+          <h3>Platformdan Beklentileri</h3>
+          <div class="long-text">${nl2br(c.beklentiler) || '—'}</div>
+        </div>
+        <div class="subblock">
+          <h3>Neler Katabileceğini Düşünüyor</h3>
+          <div class="long-text">${nl2br(c.katki) || '—'}</div>
+        </div>
+        <div class="subblock">
+          <h3>Proje / Fikir / Katkı Önerisi</h3>
+          <div class="long-text">${nl2br(c.proje_fikri) || '—'}</div>
+        </div>
+        <div class="subblock">
+          <h3>Onu Farklı Kılan Özellik</h3>
+          <div class="long-text">${nl2br(c.farklilik) || '—'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h2 class="section-title"><span class="num">2</span>Aday Analizi</h2></div>
+      <div class="panel-body">
+        <div class="field">
+          <label>Karar</label>
+          <select class="decision-select" id="analysisDecision" data-kod="${esc(c.kod)}" style="background:${decisionSelectBg(c.decision)}">
+            ${DECISION_OPTIONS.map(d=>`<option value="${esc(d.value)}" ${c.decision===d.value?'selected':''}>${esc(d.value)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>Talep Ettiği Rol</label>
+          <input type="text" value="${esc(c.talep_edilen_rol)}" disabled>
+        </div>
+        <div class="field">
+          <label>İngilizce</label>
+          <input type="text" value="${esc(c.ingilizce_seviyesi)}" disabled>
+        </div>
+        <div class="field">
+          <label>Atanan Ekip</label>
+          <select id="assignedTeam" data-kod="${esc(c.kod)}">
+            <option value="">— Ekip seçilmedi —</option>
+            ${TEAM_OPTIONS.map(t=>`<option value="${esc(t)}" ${c.assigned_team===t?'selected':''}>${esc(t)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>Güçlü Taraflar</label>
+          <textarea id="fieldStrengths" data-kod="${esc(c.kod)}" data-field="strengths" placeholder="Mülakatı yapan kişinin adayın güçlü yönleri hakkındaki notları...">${esc(c.strengths)}</textarea>
+        </div>
+        <div class="field">
+          <label>Risk / Doğrulama</label>
+          <textarea id="fieldRisks" data-kod="${esc(c.kod)}" data-field="risks" placeholder="Adayla ilgili riskler veya doğrulanması gereken noktalar...">${esc(c.risks)}</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h2 class="section-title"><span class="num">3</span>Mülakat Değerlendirme Formu</h2></div>
+    <div class="panel-body">
+      <div class="subblock">
+        <h3>Mülakat Bilgileri</h3>
+        <div class="field-row">
+          <div class="field"><label>Mülakat Tarihi</label><input type="date" id="interviewDate" data-kod="${esc(c.kod)}" value="${esc(c.interview_date)}"></div>
+          <div class="field"><label>Mülakatı Gerçekleştiren Kişi</label><input type="text" id="interviewer" data-kod="${esc(c.kod)}" value="${esc(c.interviewer)}" placeholder="Ad Soyad"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Mülakat Durumu</label>
+            <select id="interviewStatus" data-kod="${esc(c.kod)}">
+              ${INTERVIEW_STATUS_OPTIONS.map(s=>`<option value="${esc(s)}" ${c.interview_status===s?'selected':''}>${esc(s)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>Genel Değerlendirme</label><input type="text" id="overallEvaluation" data-kod="${esc(c.kod)}" value="${esc(c.overall_evaluation)}" placeholder="Kısa genel izlenim"></div>
+        </div>
+      </div>
+
+      <div class="subblock">
+        <h3>Değerlendirme (1–5)</h3>
+        <div class="score-grid">
+          ${SCORE_CRITERIA.map(sc=>`
+            <div class="score-item">
+              <label>${sc.label} <b>${c.scores[sc.key]||0}/5</b></label>
+              <div class="stars" data-kod="${esc(c.kod)}" data-score-key="${sc.key}">
+                ${[1,2,3,4,5].map(n=>`<button type="button" class="star ${n<=(c.scores[sc.key]||0)?'filled':''}" data-val="${n}">${n}</button>`).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="avg-score-box">
+          <div class="avg-score-num">${avg||'0.0'}</div>
+          <div class="avg-score-label">Ortalama Değerlendirme Puanı<br>(9 kriter üzerinden, otomatik hesaplanır)</div>
+        </div>
+      </div>
+
+      <div class="subblock">
+        <h3>Açık Uçlu Alanlar</h3>
+        <div class="field">
+          <label>Adayın Güçlü Yönleri</label>
+          <textarea data-kod="${esc(c.kod)}" data-field="strengths" placeholder="Güçlü Taraflar alanıyla senkronizedir...">${esc(c.strengths)}</textarea>
+          <div class="hint">Bu alan yukarıdaki "Güçlü Taraflar" ile aynı kayıttır.</div>
+        </div>
+        <div class="field">
+          <label>Geliştirilmesi Gereken Yönleri</label>
+          <textarea data-kod="${esc(c.kod)}" data-field="development_areas" placeholder="Adayın geliştirmesi gereken alanlar...">${esc(c.development_areas)}</textarea>
+        </div>
+        <div class="field">
+          <label>Riskler / Doğrulanması Gereken Konular</label>
+          <textarea data-kod="${esc(c.kod)}" data-field="interview_risk" placeholder="Mülakat sırasında ortaya çıkan riskler...">${esc(c.interview_risk)}</textarea>
+        </div>
+        <div class="field">
+          <label>Aday Hakkında Genel Not</label>
+          <textarea data-kod="${esc(c.kod)}" data-field="overall_evaluation_note" placeholder="Genel notlar...">${esc(c.overall_evaluation_note||'')}</textarea>
+        </div>
+        <div class="field">
+          <label>Mülakat Yapan Kişinin Önerisi</label>
+          <textarea data-kod="${esc(c.kod)}" data-field="interviewer_recommendation" placeholder="Öneri: kabul / red / eğitim vb. ve nedeni...">${esc(c.interviewer_recommendation)}</textarea>
+        </div>
+      </div>
+
+      <div class="decision-bar" style="background:${decisionBarBg(c.decision)}">
+        <div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px;">Karar Alanı</div>
+          <div class="cell-muted" style="font-size:12.5px;">Kararı değiştirmek dashboard istatistiklerini otomatik günceller.</div>
+        </div>
+        <div class="decision-options" id="decisionBar" data-kod="${esc(c.kod)}">
+          ${DECISION_OPTIONS.map(d=>`<button type="button" class="decision-pill ${c.decision===d.value?'active-'+d.cls:''}" data-val="${esc(d.value)}">${decisionIconSvg(d,15)} ${esc(d.value)}</button>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h2 class="section-title"><span class="num">4</span>Yönetici Notları</h2></div>
+    <div class="panel-body">
+      <div id="notesList">
+        ${c.manager_notes.length ? c.manager_notes.slice().reverse().map(n=>`
+          <div class="note-item" data-note-id="${esc(n.id)}">
+            <div class="note-head">
+              <div><span class="note-author">${esc(n.author||'İsimsiz')}</span> <span class="note-date">· ${fmtDate(n.date)}</span></div>
+              <div class="note-actions">
+                <button class="icon-btn" data-action="edit-note" data-kod="${esc(c.kod)}" data-note-id="${esc(n.id)}" title="Düzenle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+                </button>
+                <button class="icon-btn" data-action="delete-note" data-kod="${esc(c.kod)}" data-note-id="${esc(n.id)}" title="Sil">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="note-text" data-note-text-view="${esc(n.id)}">${nl2br(n.text)}</div>
+          </div>
+        `).join('') : `<div class="empty-note">Henüz not eklenmedi.</div>`}
+      </div>
+      <div class="note-add-row">
+        <input type="text" id="noteAuthor" placeholder="Notu yazan kişi">
+        <textarea id="noteText" placeholder="Yeni not ekle..."></textarea>
+        <button class="btn btn-primary" id="addNoteBtn" data-kod="${esc(c.kod)}">Not Ekle</button>
+      </div>
+    </div>
+  </div>
+  `;
+}
+function decisionSelectBg(val){
+  const m = decisionMeta(val);
+  const map = {success:'var(--success-bg)', warning:'var(--warning-bg)', blue:'var(--info-bg)', muted:'#F3F4F6', danger:'var(--danger-bg)'};
+  return map[m.cls] || '#fff';
+}
+function decisionBarBg(val){
+  return decisionSelectBg(val);
+}
+
+/* ---------- 15. OLAY BAĞLAMA (event delegation) ---------- */
+function closeMobileSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function wireDynamicEvents(){
+  const main = document.getElementById('mainContent');
+
+  // Satıra / karta tıklayınca profile git
+  main.querySelectorAll('[data-nav-candidate]').forEach(el=>{
+    el.addEventListener('click', ()=> navigate('candidate', el.dataset.navCandidate));
+  });
+  main.querySelectorAll('[data-nav]').forEach(el=>{
+    el.addEventListener('click', ()=> navigate(el.dataset.nav));
+  });
+
+  // ---- Filtreler / Arama ----
+  const searchInput = document.getElementById('searchInput');
+  if(searchInput){
+    searchInput.addEventListener('input', debounce(e=>{
+      currentFilters.q = e.target.value;
+      rerenderTableOnly();
+    }, 180));
+  }
+  [['filterRole','role'],['filterDecision','decision'],['filterTeam','team'],['filterEnglish','english'],['filterInterview','interview'],['filterEducation','education']].forEach(([id,key])=>{
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('change', e=>{ currentFilters[key] = e.target.value; rerenderTableOnly(); });
+  });
+  const clearBtn = document.getElementById('clearFilters');
+  if(clearBtn) clearBtn.addEventListener('click', ()=>{
+    currentFilters = {q:'', role:'', decision:'', team:'', english:'', interview:'', education:''};
+    render();
+  });
+
+  // ---- Aday profili: Karar (analiz dropdown) ----
+  const analysisDecision = document.getElementById('analysisDecision');
+  if(analysisDecision){
+    analysisDecision.addEventListener('change', e=>{
+      const kod = e.target.dataset.kod;
+      updateCandidateState(kod, {decision: e.target.value});
+      render(); // rozet + kanban + kpi tutarlılığı için tam yeniden render
+    });
+  }
+
+  // ---- Karar butonları (mülakat formu altındaki karar alanı) ----
+  const decisionBar = document.getElementById('decisionBar');
+  if(decisionBar){
+    decisionBar.addEventListener('click', e=>{
+      const btn = e.target.closest('.decision-pill');
+      if(!btn) return;
+      updateCandidateState(decisionBar.dataset.kod, {decision: btn.dataset.val});
+      render();
+    });
+  }
+
+  // ---- Atanan ekip ----
+  const assignedTeam = document.getElementById('assignedTeam');
+  if(assignedTeam){
+    assignedTeam.addEventListener('change', e=>{
+      updateCandidateState(e.target.dataset.kod, {assigned_team: e.target.value});
+    });
+  }
+
+  // ---- Mülakat bilgileri ----
+  const interviewDate = document.getElementById('interviewDate');
+  if(interviewDate) interviewDate.addEventListener('change', e=> updateCandidateState(e.target.dataset.kod, {interview_date: e.target.value}));
+  const interviewer = document.getElementById('interviewer');
+  if(interviewer) interviewer.addEventListener('input', debounce(e=> updateCandidateState(e.target.dataset.kod, {interviewer: e.target.value}), 400));
+  const interviewStatus = document.getElementById('interviewStatus');
+  if(interviewStatus) interviewStatus.addEventListener('change', e=>{ updateCandidateState(e.target.dataset.kod, {interview_status: e.target.value}); render(); });
+  const overallEvaluation = document.getElementById('overallEvaluation');
+  if(overallEvaluation) overallEvaluation.addEventListener('input', debounce(e=> updateCandidateState(e.target.dataset.kod, {overall_evaluation: e.target.value}), 400));
+
+  // ---- Serbest metin alanları (data-field ile işaretli tüm textarea'lar) ----
+  main.querySelectorAll('textarea[data-field]').forEach(ta=>{
+    ta.addEventListener('input', debounce(e=>{
+      const kod = e.target.dataset.kod;
+      const field = e.target.dataset.field;
+      updateCandidateState(kod, {[field]: e.target.value});
+      // Aynı alanı gösteren diğer textarea'ları da senkronize et (strengths iki yerde gösteriliyor)
+      main.querySelectorAll(`textarea[data-field="${field}"][data-kod="${kod}"]`).forEach(other=>{
+        if(other !== e.target) other.value = e.target.value;
+      });
+    }, 400));
+  });
+
+  // ---- Puanlama yıldızları ----
+  main.querySelectorAll('.stars').forEach(starGroup=>{
+    starGroup.addEventListener('click', e=>{
+      const btn = e.target.closest('.star');
+      if(!btn) return;
+      const kod = starGroup.dataset.kod;
+      const key = starGroup.dataset.scoreKey;
+      let val = parseInt(btn.dataset.val, 10);
+      const current = (STATE[kod] && STATE[kod].scores[key]) || 0;
+      if(val === current) val = 0; // aynı yıldıza tekrar tıklayınca sıfırla
+      updateScore(kod, key, val);
+      render();
+    });
+  });
+
+  // ---- Yönetici notları ----
+  const addNoteBtn = document.getElementById('addNoteBtn');
+  if(addNoteBtn){
+    addNoteBtn.addEventListener('click', ()=>{
+      const kod = addNoteBtn.dataset.kod;
+      const text = document.getElementById('noteText').value.trim();
+      const author = document.getElementById('noteAuthor').value.trim() || 'İsimsiz';
+      if(!text) return;
+      if(!STATE[kod]) STATE[kod] = defaultState(kod);
+      STATE[kod].manager_notes.push({id: uid(), date: nowIso(), author, text});
+      persistState();
+      render();
+    });
+  }
+  main.querySelectorAll('[data-action="delete-note"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const kod = btn.dataset.kod, noteId = btn.dataset.noteId;
+      if(!confirm('Bu notu silmek istediğinize emin misiniz?')) return;
+      STATE[kod].manager_notes = STATE[kod].manager_notes.filter(n=>n.id!==noteId);
+      persistState();
+      render();
+    });
+  });
+  main.querySelectorAll('[data-action="edit-note"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const kod = btn.dataset.kod, noteId = btn.dataset.noteId;
+      const note = STATE[kod].manager_notes.find(n=>n.id===noteId);
+      if(!note) return;
+      const viewEl = main.querySelector(`[data-note-text-view="${noteId}"]`);
+      if(!viewEl) return;
+      viewEl.innerHTML = `<textarea style="width:100%;min-height:70px;margin-bottom:8px;">${esc(note.text)}</textarea>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary btn-sm" data-action="save-note-edit" data-kod="${esc(kod)}" data-note-id="${esc(noteId)}">Kaydet</button>
+          <button class="btn btn-sm" data-action="cancel-note-edit">Vazgeç</button>
+        </div>`;
+      const saveBtn = viewEl.querySelector('[data-action="save-note-edit"]');
+      const cancelBtn = viewEl.querySelector('[data-action="cancel-note-edit"]');
+      const textarea = viewEl.querySelector('textarea');
+      saveBtn.addEventListener('click', ()=>{
+        note.text = textarea.value.trim();
+        note.date = nowIso();
+        persistState();
+        render();
+      });
+      cancelBtn.addEventListener('click', ()=> render());
+    });
+  });
+}
+
+function rerenderTableOnly(){
+  // Sadece tablo bulunan panel(ler)i yeniden çiz — filtre state korunur
+  const {route} = parseHash();
+  if(route!=='dashboard' && route!=='candidates') return render();
+  const list = getMergedCandidates();
+  const panels = document.querySelectorAll('#mainContent .panel');
+  if(panels.length){
+    const last = panels[panels.length-1];
+    // sadece son (aday tablosu) panelini değiştir; toolbar odaklı input focus kaybını önlemek için sadece sonuç kısmını güncelle
+    const resultCount = document.querySelector('.result-count');
+    const tableWrap = document.querySelector('.table-wrap');
+    const filtered = applyFilters(list);
+    if(resultCount) resultCount.textContent = `${filtered.length} / ${list.length} aday gösteriliyor`;
+    if(tableWrap){
+      tableWrap.outerHTML = filtered.length ? `
+      <div class="table-wrap">
+      <table class="candidates">
+        <thead><tr>
+          <th>Aday</th><th>Talep Ettiği Rol</th><th>İngilizce</th><th>Eğitim</th><th>Atanan Ekip</th><th>Karar</th><th>Mülakat</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${filtered.map(c=>`
+            <tr data-nav-candidate="${esc(c.kod)}">
+              <td><div class="name-cell"><div class="avatar">${initials(c.kod)}</div><div><div class="name-main">Aday ${esc(c.kod.toUpperCase())}</div><div class="name-sub">${esc(c.universite||'—')}</div></div></div></td>
+              <td class="cell-muted">${esc(shortRole(c.talep_edilen_rol))}</td>
+              <td class="cell-muted">${esc(c.ingilizce_seviyesi||'—')}</td>
+              <td class="cell-muted">${esc(c.ogrenim_seviyesi||'—')}</td>
+              <td class="cell-muted">${esc(c.assigned_team||'—')}</td>
+              <td><span class="badge ${badgeClassForDecision(c.decision)}"><span class="badge-dot"></span>${esc(c.decision)}</span></td>
+              <td><span class="badge ${interviewStatusBadgeClass(c.interview_status)}">${esc(c.interview_status)}</span></td>
+              <td class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table></div>` : `<div class="table-wrap"><div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <h3>Sonuç bulunamadı</h3><p>Arama veya filtre kriterlerinizi değiştirmeyi deneyin.</p>
+        </div></div>`;
+      document.querySelectorAll('#mainContent [data-nav-candidate]').forEach(el=>{
+        el.addEventListener('click', ()=> navigate('candidate', el.dataset.navCandidate));
+      });
+    }
+  }
+}
+
+/* ---------- 16. STATİK NAV / SIDEBAR ---------- */
+document.getElementById('mainNav').addEventListener('click', e=>{
+  const btn = e.target.closest('.nav-item');
+  if(!btn) return;
+  navigate(btn.dataset.route);
+});
+document.getElementById('mobileToggle').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+});
+document.getElementById('overlay').addEventListener('click', closeMobileSidebar);
+
+/* ---------- 17. BAŞLANGIÇ ---------- */
+(async function init(){
+  await loadStateFromStorage();
+  if(!location.hash) location.hash = '#/dashboard';
+  render();
+})();
+</script>
+</body>
+</html>
